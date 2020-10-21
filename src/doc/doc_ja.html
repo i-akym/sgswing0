@@ -1,0 +1,1855 @@
+<html lang="ja">
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+<style>
+<!--
+table {
+  caption-side : top }
+code, samp, kbd {
+  font-family : Consolas, 'Courier New', Courier, Monaco, monospace }
+kbd {
+  font-weight : bolder }
+.toc, .run-sample, .code-sample, .def, .usage {
+  white-space : pre }
+.toc-ref {
+  text-align : right }
+.check-mark {
+  text-align : center }
+.note-ref {
+  vertical-align : super }
+-->
+</style>
+<title>SgSwing 0.1.0 解説</title>
+</head>
+<body>
+<h1>はじめに</h1>
+<p>'SgSwing'は，プログラミング言語Sangoで作成されたプログラムからJava(TM) Swingを使用するインターフェースルーチンです。</p>
+<p>このドキュメントは，SgSwingの使用方法について解説しています。</p>
+<p>SgSwingは開発中です。
+事前の断りなく，仕様などが変更になることがあります。</p>
+<p>本書では，モジュール名「<code>sgswing.swing</code>」を適宜省略して説明します。
+また，Java AWTを含めてJava Swingを単にSwingと表記します。</p>
+
+<p>SgSwingはMIT Licenseに基いて配布されています。</p>
+<table border><tr><td>
+<p>MIT License </p>
+<p>Copyright (c) 2020 AKIYAMA Isao</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
+<p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+</td></tr></table>
+
+<h1 id="toc">目次</h1>
+<div class="toc">
+<a href="#1">1. SgSwingとは</a>
+<a href="#2">2. インストール</a>
+  <a href="#2.1">2.1. Linux環境へのインストール</a>
+<a href="#3">3. 使用方法</a>
+  <a href="#3.1">3.1. サンプルプログラムを読んでみる</a>
+  <a href="#3.2">3.2. 使用宣言と使用開始</a>
+  <a href="#3.3">3.3. コンテキスト</a>
+  <a href="#3.4">3.4. データ型</a>
+  <a href="#3.5">3.5. リスナ</a>
+  <a href="#3.6">3.6. プログラム終了</a>
+<a href="#4">4. Swingオブジェクト</a>
+  <a href="#4.1">4.1. コンポーネント</a>
+    <a href="#4.1.1">4.1.1. コンポーネント</a>
+    <a href="#4.1.2">4.1.2. Jコンポーネント</a>
+  <a href="#4.2">4.2. ウィンドウ</a>
+    <a href="#4.2.1">4.2.1. 抽象ウィンドウ</a>
+    <a href="#4.2.2">4.2.2. フレーム</a>
+    <a href="#4.2.3">4.2.3. ダイアログ</a>
+  <a href="#4.3">4.3. メニュー</a>
+    <a href="#4.3.1">4.3.1. メニューバー</a>
+    <a href="#4.3.2">4.3.2. メニュー</a>
+    <a href="#4.3.3">4.3.3. ポップアップメニュー</a>
+    <a href="#4.3.4">4.3.4. メニュー項目</a>
+  <a href="#4.4">4.4. ペイン</a>
+    <a href="#4.4.1">4.4.1. 抽象パネル</a>
+    <a href="#4.4.2">4.4.2. <code>BorderLayout</code>パネル</a>
+    <a href="#4.4.3">4.4.3. <code>GridLayout</code>パネル</a>
+    <a href="#4.4.4">4.4.4. スクロールペイン</a>
+    <a href="#4.4.5.">4.4.5 オプションペイン</a>
+  <a href="#4.5">4.5. ボーダ</a>
+    <a href="#4.5.1">4.5.1. 抽象ボーダ</a>
+    <a href="#4.5.2.">4.5.2. <code>Empty</code>ボーダ</a>
+    <a href="#4.5.3">4.5.3. <code>Etched</code>ボーダ</a>
+    <a href="#4.5.4">4.5.4. <code>Titled</code>ボーダ</a>
+  <a href="#4.6">4.6. ボタン</a>
+    <a href="#4.6.1">4.6.1. 抽象ボタン</a>
+    <a href="#4.6.2">4.6.2. ボタン</a>
+    <a href="#4.6.3">4.6.3. チェックボックス</a>
+    <a href="#4.6.3">4.6.3. ラジオボタン</a>
+    <a href="#4.6.4">4.6.4. ボタングループ</a>
+  <a href="#4.7">4.7. 文字・図形の表示</a>
+    <a href="#4.7.1">4.7.1. ラベル</a>
+    <a href="#4.7.2">4.7.2. 画像</a>
+    <a href="#4.7.3">4.7.3. アイコン</a>
+    <a href="#4.7.4">4.7.4. キャンバス</a>
+  <a href="#4.8">4.8. テキスト入力</a>
+    <a href="#4.8.1">4.8.1. テキストコンポーネント</a>
+    <a href="#4.8.2">4.8.2. テキストフィールド</a>
+    <a href="#4.8.3">4.8.3. テキストエリア</a>
+    <a href="#4.8.4">4.8.4. 抽象ドキュメント</a>
+    <a href="#4.8.5">4.8.5. プレーンドキュメント</a>
+  <a href="#4.9">4.9. その他</a>
+    <a href="#4.9.1">4.9.1. カーソル</a>
+    <a href="#4.9.2">4.9.2. タイマ</a>
+<a href="#5">5. Swingオブジェクト以外のデータ・関数</a>
+  <a href="#5.1">5.1. 例外</a>
+  <a href="#5.2">5.2. コンテキスト</a>
+  <a href="#5.3">5.3. リスナ</a>
+  <a href="#5.4">5.4. 座標，矩形など</a>
+  <a href="#5.5">5.5. アラインメントなど</a>
+  <a href="#5.6">5.6. キー</a>
+  <a href="#5.7">5.7. 色</a>
+  <a href="#5.8">5.8. フォント</a>
+<a href="#A">A. Swingオブジェクト</a>
+<a href="#B">B. イベント</a>
+</div>
+
+<hr/>
+
+<h1 id="1">1. SgSwingとは</h1>
+<p>'SgSwing'は，プログラミング言語Sangoで作成されたプログラムからJava Swingを使用するインターフェースルーチンです。
+AKIYAMA Isaoが趣味で開発しています。</p>
+<p>SgSwingは，Swingの機能のうち，よく使用される機能を提供します。
+API(Application Programming Interface)は，Swingのそれとほぼ対応していますが，そうでないものも一部あります。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h1 id="2">2. インストール</h1>
+<p>Sango1.1以上，Java1.8以上がインストールされている必要があります。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="2.1">2.1. Linux環境へのインストール</h2>
+<p>以下の手順でインストールします。</p>
+<ol>
+  <li>リリースファイルを解凍します。</li>
+  <li>解凍してできた「<code>release</code>」をシェルのカレントディレクトリにします。</li>
+  <li>「<code>unix-configure.sh</code>」にインストール先ディレクトリを絶対パスで指定して実行します。
+    ここでは「<samp>/opt/sgswing</samp>」をインストールディレクトリとします。
+    正常終了後，「<code>install.sh</code>」を実行します。</li>
+    <blockquote class="run-sample">実行例（初期インストール）
+<samp>$ <kbd>tar -xz -f sgswing1.0.0_1.tgz</kbd></samp>
+<samp>$ <kbd>cd release</kbd></samp>
+<samp>$ <kbd>./unix-configure -install-to /opt/sgswing</kbd></samp>
+<samp>$ <kbd>sudo ./install.sh</kbd></samp></blockquote></li>
+    <blockquote class="run-sample">実行例（更新インストール）
+<samp>$ <kbd>tar -xz -f sgswing1.0.0_1.tgz</kbd></samp>
+<samp>$ <kbd>cd release</kbd></samp>
+<samp>$ <kbd>./unix-configure -install-to /opt/sgswing</kbd></samp>
+<samp>$ <kbd>sudo ./install.sh -mode upgrade</kbd></samp></blockquote></li>
+  <li>インストールしたライブラリファイルを<code>sangoc</code>，<code>sango</code>のモジュール探索パスに追加し，動作確認をします。
+    モジュール探索パスへの追加は以下のいずれかの方法で行います。
+    ここでは「<samp>/opt/sango</samp>」をSangoのインストールディレクトリとして説明します。
+    <ul>
+      <li> （方法1）Sangoライブラリディレクトリ配下にSgSwingライブラリディレクトリへのリンクを張る
+        <blockquote class="run-sample">実行例（設定と動作確認）
+<samp>$ <kbd>sudo ./link-lib.sh /opt/sango</kbd></samp>
+<samp>$ <kbd>cd /opt/sgswing/sample</kbd></samp>
+<samp>$ <kbd>sango hello</kbd></samp></blockquote></li>
+      <li> （方法2）Sangoライブラリディレクトリ配下にSgSwingライブラリをコピーする
+        <blockquote class="run-sample">実行例（設定と動作確認）
+<samp>$ <kbd>sudo ./copy-lib.sh /opt/sango</kbd></samp>
+<samp>$ <kbd>cd /opt/sgswing/sample</kbd></samp>
+<samp>$ <kbd>sango hello</kbd></samp></blockquote></li>
+      <li> （方法3）<code>sangoc</code>，<code>sango</code>の環境変数<code>SANGO_MODULES</code>にSgSwingライブラリディレクトリを指定する
+        <blockquote class="run-sample">実行例（設定と動作確認）
+<samp>$ <kbd>export SANGO_MODULES=/opt/sgswing/lib:$SANGO_MODULES</kbd></samp>
+<samp>$ <kbd>cd /opt/sgswing/sample</kbd></samp>
+<samp>$ <kbd>sango hello</kbd></samp></blockquote></li>
+      <li> （方法4）<code>sangoc</code>，<code>sango</code>の<code>-modules</code>（<code>-m</code>）オプションにSgSwingライブラリディレクトリを指定する
+        <blockquote class="run-sample">実行例（動作確認）
+<samp>$ <kbd>cp /opt/sgswing/sample/hello.sg .</kbd></samp>
+<samp>$ <kbd>sangoc -m .:/opt/sgswing/lib hello.sg</kbd></samp>
+<samp>$ <kbd>sango -m .:/opt/sgswing/lib hello</kbd></samp></blockquote></li>
+    </ul>
+  <li>解凍してできたディレクトリは不要ですので，削除します。</li>
+</ol>
+ 
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h1 id="3">3. 使用方法</h1>
+<p>SgSwingを使用するにはいくつかの決まり事があります。
+この章では，決まり事と主な留意点を説明します。</p>
+<p>なお，コーディング例などにおいて，SgSwingのモジュール名は<code>sw</code>とします。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="3.1">3.1. サンプルプログラムを読んでみる</h2>
+<p>SgSwingプログラミングを始めるにあたって，<code>sample/hello.sg</code>を読んでみましょう。
+このプログラムは，ボタンを押すと，ダイアログが表示されるものです。</p>
+
+<blockquote class="code-sample"><code>hello.sg
+ 1: import "sgswing.swing" -&gt; sw ;;
+ 2:
+ 3: eval _main_ -&gt; &lt;void&gt; {
+ 4:   sw.icx = *Cx,
+ 5:   Cx "Hello" sw.create_frame = *Frame,
+ 6:   Cx sw.create_button = *B_greeting,
+ 7:   Cx (B_greeting sw.as_abutton) "Click me" sw.set_text,
+ 8:
+ 9:   \ &lt;sw.context_h&gt; *ECx &lt;cstr&gt; *E &lt;sw.event_info&gt; *EI -&gt; &lt;void&gt; {
+10:     ECx (Frame sw.as_component) "Greeting" sw.plain_message$ "Hello, world!" sw.show_message_dialog
+11:   } sw.create_listener = *Lis,
+12:   Cx (B_greeting sw.as_abutton) Lis sw.add_action_listener,
+13:
+14:   Cx Frame sw.get_content_pane &gt;&gt; sw.instance = *CP sw.border_layout_panel_obj$,
+15:   Cx CP (B_greeting sw.as_component) sw.border_layout_center$ sw.add_component,
+16:   Cx Frame sw.exit_on_frame_close$ sw.set_default_close_operation,
+17:   Cx (Frame sw.as_component) (200 100 sw.dimension$) sw.set_size,
+18:   Cx (Frame sw.as_window) (100 100 sw.in_screen$) sw.set_location,
+19:   Cx Frame true$ sw.set_visible
+20: } ;;</code></blockquote>
+
+<p>1: SgSwingの使用を宣言します。</p>
+<p>3: メインルーチンを開始します。</p>
+<p>4: コンテキストとして「イニシエータ・コンテキスト」を取得します。
+コンテキストについては後述します。</p>
+<p>5: フレームを生成します。
+<p>6-7: ボタンを生成し，表示するテキストを設定します。</p>
+<p>9-11: ボタンが押されたときに呼び出されるリスナ（<code>ActionListener</code>）を定義します。
+リスナについては後述します。</p>
+<p>10: ダイアログを表示します。</p>
+<p>12: ボタンにリスナを登録します。</p>
+<p>14: フレームのコンテントペイン（内容を表示するペイン）を取得すると，<code>BorderLayout</code>を持つパネルが得られます。</p>
+<p>15: パネルのCENTERにボタンを配置します。</p>
+<p>16: フレームの閉じるボタンが押されたときに，プログラムを終了するよう設定します。</p>
+<p>17: フレームの大きさを設定します。</p>
+<p>18: フレームに表示される位置を設定します。</p>
+<p>19: フレームを表示します。
+この場合制御は戻りますが，プログラムはリスナの起動待ちになり終了しません。</p>
+<p><code>sample/test.sg</code>はGUIテストするプログラムです。
+プログラミングの参考に参照してください。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="3.2">3.2. 使用宣言と使用開始</h2>
+<p><code>import</code>文により，SgSwingの使用を宣言します。</p>
+
+<blockquote class="code-sample">コード例<samp><code>
+import &quot;sgswing.swing&quot; -&gt; sw ;;</code></samp></blockquote>
+
+<p>後述する<code>initiator_context</code>（別名<code>icx</code>）を呼び出すことにより，SgSwingは自動的に開始されます。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="3.3">3.3. コンテキスト</h2>
+<p>SgSwingはSwingとの橋渡しのため，「コンテキスト」（<code>&lt;context_h&gt;</code>）を使用します<span class="note-ref">*1</span>。
+コンテキストを誤って使用すると，プログラムのフリーズなどを引き起こす可能性がありますので，本節，およびリスナの使用方法を理解した上でプログラムを作成してください。</p>
+<p>コンテキストには，「イニシエータ・コンテキスト」(initiator context)と「コールバック・コンテキスト」(callback context)があります。</p>
+<p>イニシエータ・コンテキストは，プログラム開始時に，GUI部品を設定するために使用します。
+イニシエータ・コンテキストは，<code>initiator_context</code>（別名<code>icx</code>）で取得します。
+何回取得しても同一のオブジェクトが得られます。</p>
+<p>GUIを表示しSwingが稼働するとイニシエータ・コンテキストは不要になりますが，コンテキスト・オブジェクトは有効であり，使用してSgSwingを呼び出すこともできます。
+この場合は，コールバックと非同期にSwingに要求を行います。</p>
+<p>コールバック・コンテキストは，リスナの実行に対応しています。
+Swingからコールバックが発生するとSgSwingはコールバック・コンテキストを生成し，対応するユーザ定義のリスナ・ルーチンに渡します。
+リスナがSgSwingを呼び出す場合は，開始時に渡されたコンテキストを使用しなければなりません。
+リスナが終了すると，当該コンテキストは破棄され，コンテキスト・オブジェクトは無効になります。 </p>
+
+<blockquote class="note">*1：SgSwingは，コンテキストにしたがい，Swing機能の呼び出しを，Swingのイベント・ディスパッチ・スレッド（event dispatch thread）で実行させます。</blockquote>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="3.4">3.4. データ型</h2>
+<p>この節では扱うデータの型と相互変換について，例を交えて解説します。</p>
+<p>SgSwingは，Swingのオブジェクト<span class="note-ref">*1</span>（以降，Swingオブジェクトと呼びます）への参照をハンドルとして提供します。
+ハンドルの型は，Swingオブジェクトの型に応じた型になっています。
+例えば<code>javax.swing.JButton</code>へのハンドルは<code>&lt;button_h&gt;</code>です。
+<code>JButton</code>は<code>javax.swing.AbstractButton</code>の派生クラスですので，Javaプログラミングにおいては<code>AbstractButton</code>としても使用できます。
+SgSwingは<code>AbstractButton</code>に対して<code>&lt;a_abutton_h&gt;</code>をハンドルとしますが<span class="note-ref">*2</span>，Sangoには型の継承という概念がないため，<code>&lt;button_h&gt;</code>は<code>&lt;a_abutton_h&gt;</code>としては扱えません。
+この場合は，<code>button_as_abutton</code>（別名<code>as_abutton</code>）を使用して，<code>&lt;button_h&gt;</code>を<code>&lt;a_abutton_h&gt;</code>に変換します。 </p>
+
+<blockquote class="def"><code>button_as_abutton</code>の定義
+<code>eval &lt;button_h&gt; *Button button_as_abutton | as_abutton @public -&gt; &lt;a_abutton_h&gt; ;;</code></blockquote>
+
+<p>これと同様に，基底クラスにキャストする関数が適宜提供されています。
+これらの関数はSwingの機能を使用しないため，コンテキストは不要です。</p>
+
+<p>次に，基底クラスを派生クラスにキャストする例を説明します。</p>
+<p>フレームからコンテントペインを取得するとパネル（<code>&lt;a_panel_h&gt;</code>）が返されます。
+SgSwingでは，パネルを抽象クラス（インスタンス生成できないクラス）として位置づけています<span class="note-ref">*3</span> <span class="note-ref">*4</span>。</p>
+
+<blockquote class="def"><code>frame_get_content_pane</code>の定義
+<code>eval &lt;context_h&gt; *Cx &lt;frame_h&gt; *Frame frame_get_content_pane | get_content_pane @public -&gt; &lt;a_panel_h&gt; ;;</code></blockquote>
+
+<p>フレームのコンテントペインは，初期状態では，<code>BorderLayout</code>を持つパネル（<code>&lt;border_laytout_panel_h&gt;</code>）です。
+そこで<code>&lt;a_panel_h&gt;</code>を<code>&lt;border_laytout_panel_h&gt;</code>にキャストする必要があります。
+そのためには，次の関数を使用します。</p>
+
+<blockquote class="def"><code>a_panel_instance</code>の定義
+<code>eval &lt;a_panel_h&gt; *Panel a_panel_instance | instance @public -&gt; &lt;swing_obj&gt; ;;</code></blockquote>
+
+<p><code>&lt;swing_obj&gt;</code>は，具体的な（最終的な具象）クラスのインスタンスに対応するハンドルを持ちます。
+返された値をデータ構築子で選択すれば，ハンドルを取得できます。</p>
+
+<blockquote class="def"><code>swing_obj</code>の定義
+<code>data &lt;swing_obj&gt; @public :=
+| &lt;frame_h&gt; frame_obj$
+ ...
+| &lt;border_layout_panel_h&gt; border_layout_panel_obj$
+| &lt;grid_layout_panel_h&gt; grid_layout_panel_obj$
+ ...
+;;</code></blockquote>
+
+<p>オブジェクトの実際の型がわかっていれば，<code>&lt;swing_obj&gt;</code>を特定のハンドルに落とし込む関数が使用できます。</p>
+
+<blockquote class="def"><code>border_layout_panel_h</code>関数の定義
+<code>eval &lt;swing_obj&gt; *Obj border_layout_panel_h @public -&gt; &lt;border_layout_panel_h maybe&gt; ;;</code></blockquote>
+
+<p>このような関数はSwingオブジェクトごとに用意されており，型が一致すればそのハンドル返します。</p>
+
+<blockquote class="note">*1：SgSwingが提供するSwingオブジェクトの多くは，SwingのクラスをSgSwingが継承して拡張したクラスのインスタンスです。<br/>
+*2：「<code>a_*_h</code>」の形をした型は，SgSwingで抽象クラスとして扱われるクラスのインスタンスに対応するハンドルです。ただし，後述するように，Swingでは具象クラスのこともあります。<br/>
+*3：派生クラスを持つクラスは，Javaでは抽象クラスにも具象クラスにすることができますが，SgSwingでは抽象クラスとして扱われます。<br/>
+*4：Swingのパネル（javax.swing.JPanel）は具象クラスで，レイアウトマネージャを設定して使用しますが，SgSwingではそこまでの自由度を持たせず，レイアウトマネージャを固定した形でパネルを提供します。そのため，レイアウトマネージャのタイプごとにパネルの型が異なります。</blockquote>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="3.5">3.5. リスナ</h2>
+<p>GUIに対するユーザの操作や，GUIの状態変化などの際にコールバックされる仕組みがリスナ（listener）です。
+リスナは，コールバック単位で新しいアクタとして起動されます。</p>
+<p>Swingでは，リスナの種類に応じてinterfaceが定義されており，プログラマはこれを実装して登録します。
+発生するイベントに応じて呼び出されるメソッドが異なります。
+SgSwingでは，呼び出される関数（リスナ実装関数：&lt;event_proc&gt;）の形は一種類のみで，渡されたイベント名により処理を切り替えるようプログラミングします。</p>
+
+<blockquote class="def">リスナ実装関数
+<code>alias type &lt;event_proc&gt; @public := &lt;context_h cstr event_info void fun&gt; ;;
+alias type &lt;event_info&gt; @public := &lt;cstr event_info_d &quot;sango.util.map&quot;.map&gt; ;;</code></blockquote>
+
+<p>第一引数には，コンテキストが渡されます。
+このリスナ処理中は，渡されたコンテキストを使用します。</p>
+<p>第二引数には，イベント名が渡されます。
+例えば，Swingでの<code>ActionListener#actionPerformed</code>の場合は<code>&quot;action.performed&quot;</code>になります（対応は「<a href="#B">B. イベント</a>」を参照）。</p>
+<p>第三引数には，イベント情報が渡されます。
+全てのイベントに対して，<code>&quot;source&quot;</code>というキーで，イベントが発生したSwingオブジェクトが<code>(&lt;swing_obj&gt; obj_eid$)</code>の形で格納されています。
+それ以外の情報は，イベントによって異なります（詳細は「<a href="#B">B. イベント</a>」を参照）。 </p>
+
+<p>リスナを登録するには，リスナ実装関数からリスナ実装（<code>&lt;listener_h&gt;</code>）を作成し，それを対象のオブジェクトに登録します。</p>
+
+<blockquote class="def">リスナ実装の作成
+<code>eval &lt;event_proc&gt; *Event_proc create_listener @public -&gt; &lt;listener_h&gt; ;;</code></blockquote>
+
+<p>ボタンに対して<code>ActionListener</code>を登録する例を以下に示します。
+登録関数は抽象ボタンが提供しますので，抽象ボタンに対して登録します。</p>
+
+<blockquote class="code-sample">リスナの登録例
+<code>\ &lt;sw.context_h&gt; *ECx &lt;cstr&gt; *E &lt;sw.event_info&gt; *EI -&gt; &lt;void&gt; { do_something } sw.create_listener = *Lis,
+Cx (Button sw.as_abutton) Lis sw.add_action_listener</code></blockquote>
+
+<p>リスナの処理を複数ののアクタで分担して行うことも可能です。
+この場合，Swing機能の呼び出しは直列化され逐次実行されますので，デッドロックが発生しないよう注意が必要です。
+また，コールバックで起動された関数が終了（復帰）するとコンテキストが無効になるため，関連するすべての処理の完了を待ち合わせてから終了するようにします。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="3.6">3.6. プログラム終了</h2>
+<p>プログラムの終了にあたり，SgSwingを終了させる特別な処理は必要ありません。</p>
+<p>リスナの処理としてプログラムを終了させる際には，<code>&quot;sango.system.runtime&quot;.exit</code>ではなく，<code>&quot;sango.system.runtime&quot;.shutdown</code>を使用します。
+<code>exit</code>は内部で例外を発生させアクタを強制終了させるため，コールバックが正常終了しなくなります。</p>
+<p>フレームの閉じるボタンでプログラムを終了させるには，フレームの<code>set_default_close_operation</code>で<code>exit_on_frame_close$を設定しておく方法もあります。</code></p>
+
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h1 id="4">4. Swingオブジェクト</h1>
+<p>本章では，Swingオブジェクトについて概説します。
+Swingの機能の詳細は，Swingのドキュメントを参照してください。
+Swingとの対応，変換可能な基底クラスのハンドルについては，「<a href="#A">A. Swingオブジェクト</a>」を参照してください。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;swing_obj&gt; @public :=
+| &lt;frame_h&gt; frame_obj$
+| &lt;dialog_h&gt; dialog_obj$
+| &lt;menu_bar_h&gt; menu_bar_obj$
+| &lt;menu_h&gt; menu_obj$
+| &lt;popup_menu_h&gt; popup_menu_obj$
+| &lt;menu_item_h&gt; menu_item_obj$
+| &lt;border_layout_panel_h&gt; border_layout_panel_obj$
+| &lt;grid_layout_panel_h&gt; grid_layout_panel_obj$
+| &lt;scroll_pane_h&gt; scroll_pane_obj$
+| &lt;empty_border_h&gt; empty_border_obj$
+| &lt;etched_border_h&gt; etched_border_obj$
+| &lt;titled_border_h&gt; titled_border_obj$
+| &lt;button_h&gt; button_obj$
+| &lt;check_box_h&gt; check_box_obj$
+| &lt;radio_button_h&gt; radio_button_obj$
+| &lt;button_group_h&gt; button_group_obj$
+| &lt;label_h&gt; label_obj$
+| &lt;image_h&gt; image_obj$
+| &lt;icon_h&gt; icon_obj$
+| &lt;canvas_h&gt; canvas_obj$
+| &lt;text_field_h&gt; text_field_obj$
+| &lt;text_area_h&gt; text_area_obj$
+| &lt;plain_document_h&gt; plain_document_obj$
+| &lt;cursor_h&gt; cursor_obj$
+| &lt;timer_h&gt; timer_obj$ ;;</code></td></tr></table>
+<p>Swingオブジェクトへのハンドルを表します。
+SgSwingのデータ（型）に振り分けるために使用します。</p>
+
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="4.1">4.1. コンポーネント</h2>
+<p>多くのGUIの部品（の基底クラス）です。
+Java AWTで定義されているコンポーネントとSwingで定義されているコンポーネント（Jコンポーネント）があります。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.1.1">4.1.1. コンポーネント</h3>
+<p>java.awtが定義するコンポーネントです。
+実体は，<code>java.awt.Component</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;a_component_h&gt; @opaque ;;</code></td></tr></table>
+<p>コンポーネントへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj a_component_h @public -&gt; &lt;a_component_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_component_h&gt; *Comp a_component_instance | instance @public -&gt; &lt;swing_obj&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報を取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_add_focus_listener | add_focus_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>FocusListener</code>を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_remove_focus_listener | remove_focus_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>FocusListener</code>を削除します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_add_mouse_listener | add_mouse_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>MouseListener</code>を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_remove_mouse_listener | remove_mouse_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>MouseListener</code>を削除します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_add_mouse_motion_listener | add_mouse_motion_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>MouseMotionListener</code>を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_remove_mouse_motion_listener | remove_mouse_motion_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>MouseMotionListener</code>を削除します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_add_key_listener | add_key_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>KeyListener</code>を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_remove_key_listener | remove_key_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>KeyListener</code>を削除します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;dimension&gt; *Dim a_component_set_size | set_size @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>大きさを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;dimension maybe&gt; *Dim_ a_component_set_minimum_size | set_minimum_size @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>最小の大きさを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;dimension maybe&gt; *Dim_ a_component_set_maximum_size | set_maximum_size @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>最大の大きさを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;dimension maybe&gt; *Dim_ a_component_set_preferred_size | set_preferred_size @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>適した大きさを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp a_component_enabled? | enabled? @public -&gt; &lt;bool&gt; ;;</code></td></tr></table>
+<p>有効かどうかを返します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;bool&gt; *Sw a_component_set_enabled | set_enabled @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>有効／無効を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp a_component_repaint | repaint @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>再描画処理をスケジュールします。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp a_component_request_focus | request_focus @public -&gt; &lt;bool&gt; ;;</code></td></tr></table>
+<p>フォーカスを要求します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;cursor_h&gt; *Cursor a_component_set_cursor | set_cursor @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>マウスカーソルを設定します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.1.2">4.1.2. Jコンポーネント</h3>
+<p>Swingが定義するコンポーネントです。
+実体は，<code>javax.swing.JComponent</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;a_jcomponent_h&gt; @opaque ;;</code></td></tr></table>
+<p>Jコンポーネントへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj a_jcomponent_h @public -&gt; &lt;a_jcomponent_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_jcomponent_h&gt; *Comp a_jcomponent_instance | instance @public -&gt; &lt;swing_obj&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報を取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_jcomponent_h&gt; *Comp &lt;bool&gt; *Sw a_jcomponent_set_opaque | set_opaque @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>コンポーネント内のすべてのピクセルを描画するか否かを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_jcomponent_h&gt; *Comp &lt;color&gt; *Color a_jcomponent_set_background | set_background @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>背景色を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_jcomponent_h&gt; *Comp &lt;a_border_h&gt; *Border a_jcomponent_set_border | set_border @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>ボーダ（外枠）を設定します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="4.2">4.2. ウィンドウ</h2>
+<p>GUIスクリーンに表示される一番外側のコンテナです。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.2.1">4.2.1. 抽象ウィンドウ</h3>
+<p>フレーム，ダイアログの基底クラスで，表示／非表示の切り替え，破棄，表示位置の指定などができます。
+実体は，<code>java.awt.Window</code>です。
+Swingでは具象クラスですが，SgSwingでは抽象クラスの位置づけです。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;a_window_h&gt; @opaque ;;</code></td></tr></table>
+<p>抽象ウィンドウへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj a_window_h @public -&gt; &lt;a_window_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_window_h&gt; *Window a_window_instance | instance @public -&gt; &lt;swing_obj&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報を取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_window_h&gt; *Window a_window_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;</code></td></tr></table>
+<p>コンポーネントへのハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_window_h&gt; *Window &lt;listener_h&gt; *Lis a_window_add_window_listener | add_window_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>WindowListener</code>を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_window_h&gt; *Window &lt;listener_h&gt; *Lis a_window_remove_window_listener | remove_window_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>WindowListener</code>を削除します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_window_h&gt; *Window a_window_pack | pack @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>内部コンポーネントの配置，サイズを決定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_window_h&gt; *Window &lt;bool&gt; *Sw a_window_set_visible | set_visible @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>表示／非表示を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_window_h&gt; *Window a_window_dispose | dispose @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>破棄します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_window_h&gt; *Window &lt;window_location&gt; *Loc a_window_set_location | set_location @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>スクリーン上の位置を指定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;window_location&gt; @public :=
+| &lt;int&gt; &lt;int&gt; in_screen$
+| center_of_screen$
+| &lt;a_component_h&gt; relative_to_component$
+| platform_default_location$ ;;</code></td></tr></table>
+<p>スクリーン上の位置を表します。
+<code>in_screen$</code>には，x座標とy座標を指定します。
+<code>relative_to_component$</code>には，その上にウィンドウを表示させたいコンポーネントを指定します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.2.2">4.2.2. フレーム</h3>
+<p>メニューバーを持つウィンドウです。
+実体は，<code>javax.swing.JFrame</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;frame_h&gt; @opaque ;;</code></td></tr></table>
+<p>フレームへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj frame_h @public -&gt; &lt;frame_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;frame_h&gt; *Frame frame_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;frame_h&gt; *Frame frame_as_window | as_window @public -&gt; &lt;a_window_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;cstr&gt; *Title create_frame @public -&gt; &lt;frame_h&gt; ;;</code></td></tr></table>
+<p><code>Title</code>をタイトルとして持つフレームを作成します。
+この時点ではフレームは表示されていません。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;frame_h&gt; *Frame &lt;frame_close_operation&gt; *Op frame_set_default_close_operation | set_default_close_operation @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>閉じるボタンを押したときの動作を指定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;frame_close_operation&gt; @public :=
+| do_nothing_on_frame_close$
+| hide_on_frame_close$
+| dispose_on_frame_close$
+| exit_on_frame_close$ ;;</code></td></tr></table>
+<p>閉じるボタンを押したときの動作を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;frame_h&gt; *Frame frame_get_content_pane | get_content_pane @public -&gt; &lt;a_panel_h&gt; ;;</code></td></tr></table>
+<p>コンテントペイン（コンポーネントを配置するペイン）を取得します。
+実際には，<code>BorderLayout</code>のパネルが返されます。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;frame_h&gt; *Frame &lt;cstr&gt; *Title frame_set_title | set_title @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>タイトルを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;frame_h&gt; *Frame &lt;menu_bar_h&gt; *Menu_bar frame_set_menu_bar | set_menu_bar @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>メニューバーを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;frame_h&gt; *Frame &lt;bool&gt; *Sw frame_set_visible | set_visible @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>表示／非表示を設定します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.2.3">4.2.3. ダイアログ</h3>
+<p>モダリティ(modality)を設定できるウィンドウで，ダイアログボックスを実装するために使用します。
+実体は，<code>javax.swing.JDialog</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;dialog_h&gt; @opaque ;;</code></td></tr></table>
+<p>ダイアログへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj dialog_h @public -&gt; &lt;dialog_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;modality&gt; @public :=
+| application_modal$
+| document_modal$
+| modeless$ ;;</code></td></tr></table>
+<p>モダリティを表します。
+<code>application_modal$</code>は，全ウィンドウをロックします。
+<code>document_modal$</code>は，自身の親ウィンドウをロックします。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;dialog_close_operation&gt; @public :=
+| do_nothing_on_dialog_close$
+| hide_on_dialog_close$
+| dispose_on_dialog_close$ ;;</code></td></tr></table>
+<p>閉じるボタンを押したときの動作を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;dialog_h&gt; *Dialog dialog_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;dialog_h&gt; *Dialog dialog_as_window | as_window @public -&gt; &lt;a_window_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_window_h&gt; *Owner &lt;cstr&gt; *Title &lt;modality&gt; *Modality create_dialog @public -&gt; &lt;dialog_h&gt; ;;</code></td></tr></table>
+<p><code>Owner</code>を親ウィンドウ，<code>Title</code>をタイトル，<code>Modality</code>をモダリティとして持つダイアログを作成します。
+この時点ではダイアログは表示されていません。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;dialog_h&gt; *Dialog &lt;dialog_close_operation&gt; *Op dialog_set_default_close_operation | set_default_close_operation @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>閉じるボタンを押したときの動作を指定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;dialog_h&gt; *Dialog dialog_get_content_pane | get_content_pane @public -&gt; &lt;a_panel_h&gt; ;;</code></td></tr></table>
+<p>コンテントペイン（コンポーネントを配置するペイン）を取得します。
+実際には，<code>BorderLayout</code>のパネルが返されます。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;dialog_h&gt; *Dialog &lt;bool&gt; *Sw dialog_set_visible | set_visible @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>表示／非表示を設定します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="4.3">4.3. メニュー</h2>
+<p>メニューを構成するオブジェクトです。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.3.1">4.3.1. メニューバー</h3>
+<p>フレームに設定するメニューバーです。
+実体は，<code>javax.swing.JMenuBar</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;menu_bar_h&gt; @opaque ;;</code></td></tr></table>
+<p>メニューバーへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj menu_bar_h @public -&gt; &lt;menu_bar_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_menu_bar @public -&gt; &lt;menu_bar_h&gt; ;;</code></td></tr></table>
+<p>メニューバーを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;menu_bar_h&gt; *Menu_bar &lt;menu_h&gt; *Menu menu_bar_add_menu | add_menu @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>メニューを追加します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.3.2">4.3.2. メニュー</h3>
+<p>メニューバーからカスケードして表示されるメニューです。
+実体は，<code>javax.swing.JMenu</code>です。
+<code>javax.swing.JMenu</code>は<code>javax.swing.JMenuItem</code>の派生クラスですが，SgSwingではそのような関係を持たせていません。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;menu_h&gt; @opaque ;;</code></td></tr></table>
+<p>メニューへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj menu_h @public -&gt; &lt;menu_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;cstr&gt; *Text create_menu @public -&gt; &lt;menu_h&gt;  ;;</code></td></tr></table>
+<p><code>Text</code>をテキストとして持つメニューを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;menu_h&gt; *Menu &lt;menu_item_h&gt; *Menu_item menu_add_menu_item | add_menu_item @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>メニュー項目を追加します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;menu_h&gt; *Menu &lt;menu_h&gt; *Submenu menu_add_menu | add_menu @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>カスケードして表示するメニューを追加します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.3.3">4.3.3. ポップアップメニュー</h3>
+<p>表示位置やGUIの状態に応じて表示されるメニューで，コンテキストメニューとも呼ばれます。
+実体は，<code>javax.swing.JPopupMenu</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;popup_menu_h&gt; @opaque ;;</code></td></tr></table>
+<p>ポップアップメニューへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj popup_menu_h @public -&gt; &lt;popup_menu_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_popup_menu @public -&gt; &lt;popup_menu_h&gt; ;;</code></td></tr></table>
+<p>ポップアップメニューを作成します。
+この時点ではポップアップメニューは表示されていません。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;popup_menu_h&gt; *Menu &lt;menu_item_h&gt; *Menu_item popup_menu_add_menu_item | add_menu_item @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>メニュー項目を追加します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;popup_menu_h&gt; *Menu &lt;menu_h&gt; *Submenu popup_menu_add_menu | add_menu @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>カスケードして表示するメニューを追加します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;popup_menu_h&gt; *Menu &lt;bool&gt; *Sw popup_menu_set_visible | set_visible @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>表示／非表示を設定します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.3.4">4.3.4. メニュー項目</h3>
+<p>メニューの個々の項目です。
+実体は，<code>javax.swing.JMenuItem</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;menu_item_h&gt; @opaque ;;</code></td></tr></table>
+<p>メニュー項目へのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj menu_item_h @public -&gt; &lt;menu_item_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;menu_item_h&gt; *Menu_item menu_item_as_abutton | as_abutton @public -&gt; &lt;a_abutton_h&gt; ;;</code></td></tr></table>
+<p>抽象ボタンへのハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;cstr&gt; *Text create_menu_item @public -&gt; &lt;menu_item_h&gt; ;;</code></td></tr></table>
+<p><code>Text</code>をテキストとして持つメニュー項目を作成します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="4.4">4.4. ペイン</h2>
+<p>GUI部品を内部に配置するコンポーネントです。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.4.1">4.4.1. 抽象パネル</h3>
+<p>規定のレイアウトによってGUI部品を配置するコンポーネントです。
+Swingではレイアウトマネージャを設定して使用しますが，SgSwingではレイアウトマネージャが組み込まれた形で提供され，レイアウトマネージャごとに型が異なります。
+<code>BorderLayout</code>と<code>GridLayout</code>のパネルが提供されています。
+実体は，<code>javax.swing.JPanel</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;a_panel_h&gt; @opaque ;;</code></td></tr></table>
+<p>抽象パネルへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj a_panel_h @public -&gt; &lt;a_panel_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_panel_h&gt; *Panel a_panel_instance | instance @public -&gt; &lt;swing_obj&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報を取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_panel_h&gt; *Panel a_panel_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;a_panel_h&gt; *Panel a_panel_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_panel_h&gt; *Panel &lt;a_component_h&gt; *Comp a_panel_add_component | add_component @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>コンポーネントを追加します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.4.2">4.4.2. <code>BorderLayout</code>パネル</h3>
+<p>GUI部品を<code>BorderLayout</code>で（東西南北・中央に）配置するコンポーネントです。
+実体は，<code>javax.swing.JPanel</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;border_layout_panel_h&gt; @opaque ;;</code></td></tr></table>
+<p><code>BorderLayout</code>のパネルへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj border_layout_panel_h @public -&gt; &lt;border_layout_panel_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;border_layout_panel_h&gt; *Panel border_layout_panel_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;border_layout_panel_h&gt; *Panel border_layout_panel_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;
+eval &lt;border_layout_panel_h&gt; *Panel border_layout_panel_as_panel | as_panel @public -&gt; &lt;a_panel_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;border_layout_position&gt; @public :=
+| border_layout_center$
+| border_layout_north$
+| border_layout_south$
+| border_layout_east$
+| border_layout_west$ ;;</code></td></tr></table>
+<p><code>BorderLayout</code>における位置を表します。
+それぞれ，中央，北（上端），南（下端），東（右端），西（左端）を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_border_layout_panel @public -&gt; &lt;border_layout_panel_h&gt; ;;</code></td></tr></table>
+<p><code>BorderLayout</code>のパネルを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;border_layout_panel_h&gt; *Panel &lt;a_component_h&gt; *Comp &lt;border_layout_position&gt; *Pos border_layout_panel_add_component | add_component @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>指定した位置にコンポーネントを追加します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.4.3">4.4.3. <code>GridLayout</code>パネル</h3>
+<p>GUI部品を<code>GridLayout</code>で（格子状に）配置するコンポーネントです。
+実体は，<code>javax.swing.JPanel</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;grid_layout_panel_h&gt; @opaque ;;</code></td></tr></table>
+<p><code>GridLayout</code>のパネルへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj grid_layout_panel_h @public -&gt; &lt;grid_layout_panel_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;grid_layout_panel_h&gt; *Panel grid_layout_panel_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;grid_layout_panel_h&gt; *Panel grid_layout_panel_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;
+eval &lt;grid_layout_panel_h&gt; *Panel grid_layout_panel_as_panel | as_panel @public -&gt; &lt;a_panel_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;int&gt; *Rows &lt;int&gt; *Columns create_grid_layout_panel @public -&gt; &lt;grid_layout_panel_h&gt; ;;</code></td></tr></table>
+<p><code>GridLayout</code>のパネルを作成します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.4.4">4.4.4. スクロールペイン</h3>
+<p>テキストエリアなど大きさが変化するGUI部品を配置し，必要に応じてスクロールできるようにするオブジェクトです。
+実体は，<code>javax.swing.JScrollPane</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;scroll_pane_h&gt; @opaque ;;</code></td></tr></table>
+<p>スクロールペインへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj scroll_pane_h @public -&gt; &lt;scroll_pane_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;scroll_pane_h&gt; *Pane scroll_pane_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;scroll_pane_h&gt; *Pane scroll_pane_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_scroll_pane @public -&gt; &lt;scroll_pane_h&gt; ;;</code></td></tr></table>
+<p>スクロールペインを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;scroll_pane_h&gt; *Panel &lt;a_component_h&gt; *Comp scroll_pane_add_component | add_component @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>コンポーネントを追加します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;scroll_pane_h&gt; *Panel &lt;scroll_bar_policy&gt; *Pol scroll_pane_set_horizontal_scroll_bar_policy | set_horizontal_scroll_bar_policy @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>水平スクロールバーの表示ポリシを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;scroll_pane_h&gt; *Panel &lt;scroll_bar_policy&gt; *Pol scroll_pane_set_vertical_scroll_bar_policy | set_vertical_scroll_bar_policy @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>垂直スクロールバーの表示ポリシを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;scroll_bar_policy&gt; @public :=
+| scroll_bar_never$
+| scroll_bar_as_needed$
+| scroll_bar_always$ ;;</code></td></tr></table>
+<p>スクロールバーの表示ポリシを表します。
+それぞれ，表示しない，必要に応じて表示する，常に表示する，を表します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.4.5.">4.4.5 オプションペイン</h3>
+<p>情報メッセージや確認メッセージを表示したりユーザからの選択などを入力するGUI部品です。
+実体は<code>javax.swing.JOptionPane</code>ですが，現バージョンでは関数の中に隠ぺいされており，オブジェクトを直接扱うことはありません。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;message_type&gt; @public :=
+| information_message$
+| warning_message$
+| error_message$
+| question_message$
+| plain_message$ ;;</code></td></tr></table>
+<p>メッセージタイプを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;confirm_option&gt; @public :=
+| yes_no_option$
+| yes_no_cancel_option$ ;;</code></td></tr></table>
+<p>確認ダイアログの選択肢パターンを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;confirmed&gt; @public :=
+| confirmed_yes$
+| confirmed_no$
+| confirmed_cancel$ ;;</code></td></tr></table>
+<p>確認ダイアログでの選択を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Owner &lt;cstr&gt; *Title &lt;message_type&gt; *Msg_type &lt;a_component_h&gt; *Msg show_message_dialog @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>Msg</code>をメッセージとするダイアログを表示します。
+ダイアログが閉じられると制御が戻ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Owner &lt;cstr&gt; *Title &lt;message_type&gt; *Msg_type &lt;cstr&gt; *Msg show_message_dialog_with_text | show_message_dialog @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>Msg</code>をメッセージとするダイアログを表示します。
+ダイアログが閉じられると制御が戻ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Owner &lt;cstr&gt; *Title &lt;message_type&gt; *Msg_type &lt;a_component_h&gt; *Msg &lt;confirm_option&gt; *Opt_type show_confirm_dialog @public -&gt; &lt;confirmed&gt; ;;</code></td></tr></table>
+<p><code>Msg</code>をメッセージとする確認ダイアログを表示します。
+選択肢が選択されるかダイアログが閉じられるとその結果を返します。
+ダイアログが閉じられた場合は<code>confirmed_cancel$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Owner &lt;cstr&gt; *Title &lt;message_type&gt; *Msg_type &lt;cstr&gt; *Msg &lt;confirm_option&gt; *Opt_type show_confirm_dialog_with_text | show_confirm_dialog @public -&gt; &lt;confirmed&gt; ;;</code></td></tr></table>
+<p><code>Msg</code>をメッセージとする確認ダイアログを表示します。
+選択肢が選択されるかダイアログが閉じられるとその結果を返します。
+ダイアログが閉じられた場合は<code>confirmed_cancel$</code>が返ります。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="4.5">4.5. ボーダ</h2>
+<p>Jコンポーネントのボーダ（外枠）を実装します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.5.1">4.5.1. 抽象ボーダ</h3>
+<p>各種ボーダの基底クラスです。
+実体は，<code>javax.swing.border.Border</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;a_border_h&gt; @opaque ;;</code></td></tr></table>
+<p>抽象ボーダへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj a_border_h @public -&gt; &lt;a_border_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.5.2.">4.5.2. <code>Empty</code>ボーダ</h3>
+<p>スペースをとるだけの透過ボーダです。
+実体は，<code>javax.swing.border.EmptyBorder</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;empty_border_h&gt; @opaque ;;</code></td></tr></table>
+<p><code>Empty</code>ボーダへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj empty_border_h @public -&gt; &lt;empty_border_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;empty_border_h&gt; *Border empty_border_as_border | as_border @public -&gt; &lt;a_border_h&gt; ;;</code></td></tr></table>
+<p>抽象ボーダへのハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;insets&gt; *Insets create_empty_border @public -&gt; &lt;empty_border_h&gt; ;;</code></td></tr></table>
+<p><code>Empty</code>ボーダを作成します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.5.3">4.5.3. <code>Etched</code>ボーダ</h3>
+<p>彫り込みあるいは浮き彫りエッチングのボーダです。
+実体は，<code>javax.swing.border.EtchedBorder</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;etched_border_h&gt; @opaque ;;</code></td></tr></table>
+<p><code>Etched</code>ボーダへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj etched_border_h @public -&gt; &lt;etched_border_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;etched_border_h&gt; *Border etched_border_as_border | as_border @public -&gt; &lt;a_border_h&gt; ;;</code></td></tr></table>
+<p>抽象ボーダへのハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;etch_type&gt; *Etch_type create_etched_border @public -&gt; &lt;etched_border_h&gt; ;;</code></td></tr></table>
+<p><code>Etched</code>ボーダを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;etch_type&gt; @public :=
+| raised_etch$
+| lowered_etch$ ;;</code></td></tr></table>
+<p>エッチングのタイプを表します。
+それぞれ，浮き彫り，彫り込みを表します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.5.4">4.5.4. <code>Titled</code>ボーダ</h3>
+<p>他のボーダと組み合わせてタイトルを表示するボーダです。
+実体は，<code>javax.swing.border.TitledBorder</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;titled_border_h&gt; @opaque ;;</code></td></tr></table>
+<p><code>Titled</code>ボーダへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj titled_border_h @public -&gt; &lt;titled_border_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;titled_border_h&gt; *Border titled_border_as_border | as_border @public -&gt; &lt;a_border_h&gt; ;;</code></td></tr></table>
+<p>抽象ボーダへのハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_border_h&gt; *Border &lt;cstr&gt; *Title create_titled_border @public -&gt; &lt;titled_border_h&gt; ;;</code></td></tr></table>
+<p><code>Titled</code>ボーダを作成します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="4.6">4.6. ボタン</h2>
+<p>各種ボタンです。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.6.1">4.6.1. 抽象ボタン</h3>
+<p>ボタン，チェックボックス，ラジオボタンの基底クラスです。
+実体は，<code>javax.swing.AbstractButton</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;a_abutton_h&gt; @opaque ;;</code></td></tr></table>
+<p>抽象ボタンへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj a_abutton_h @public -&gt; &lt;a_abutton_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_abutton_h&gt; *Button a_abutton_instance | instance @public -&gt; &lt;swing_obj&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報を取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_abutton_h&gt; *Button a_abutton_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;a_abutton_h&gt; *Button a_abutton_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_abutton_h&gt; *Button &lt;listener_h&gt; *Lis a_abutton_add_action_listener | add_action_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>ActionListener</code>を追加します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_abutton_h&gt; *Button &lt;listener_h&gt; *Lis a_abutton_remove_action_listener | remove_action_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>ActionListener</code>を削除します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_abutton_h&gt; *Button &lt;cstr&gt; *Command a_abutton_set_action_command | set_action_command @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>アクションコマンドを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_abutton_h&gt; *Button a_abutton_get_text | get_text @public -&gt; &lt;cstr&gt; ;;</code></td></tr></table>
+<p>設定されているテキストを返します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_abutton_h&gt; *Button &lt;cstr&gt; *Text a_abutton_set_text | set_text @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>テキストを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_abutton_h&gt; *Button a_abutton_selected? | selected? @public -&gt; &lt;bool&gt; ;;</code></td></tr></table>
+<p>選択されているか否かを返します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_abutton_h&gt; *Button &lt;bool&gt; *Sw a_abutton_set_selected | set_selected @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>選択状態を設定します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.6.2">4.6.2. ボタン</h3>
+<p>通常のボタンです。
+実体は，<code>javax.swing.JButton</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;button_h&gt; @opaque ;;</code></td></tr></table>
+<p>ボタンへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj button_h @public -&gt; &lt;button_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;button_h&gt; *Button button_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;button_h&gt; *Button button_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;
+eval &lt;button_h&gt; *Button button_as_abutton | as_abutton @public -&gt; &lt;a_abutton_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_button @public -&gt; &lt;button_h&gt; ;;</code></td></tr></table>
+<p>ボタンを作成します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.6.3">4.6.3. チェックボックス</h3>
+<p>選択されているか否かを表し，クリックすると選択状態が反転します。
+実体は，<code>javax.swing.JCheckBox</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;check_box_h&gt; @opaque ;;</code></td></tr></table>
+<p>チェックボックスへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj check_box_h @public -&gt; &lt;check_box_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;check_box_h&gt; *Check_box check_box_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;check_box_h&gt; *Check_box check_box_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;
+eval &lt;check_box_h&gt; *Check_box check_box_as_abutton | as_abutton @public -&gt; &lt;a_abutton_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_check_box @public -&gt; &lt;check_box_h&gt; ;;</code></td></tr></table>
+<p>チェックボックスを作成します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.6.3">4.6.3. ラジオボタン</h3>
+<p>選択されているか否かを表し，ボタングループ（指定したいくつかのラジオボタン）の中で選択されているものが一つになるように維持されます。
+実体は，<code>javax.swing.JRadioButton</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;radio_button_h&gt; @opaque ;;</code></td></tr></table>
+<p>ラジオボタンへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj radio_button_h @public -&gt; &lt;radio_button_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;radio_button_h&gt; *Radio_button radio_button_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;radio_button_h&gt; *Radio_button radio_button_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;
+eval &lt;radio_button_h&gt; *Radio_button radio_button_as_abutton | as_abutton @public -&gt; &lt;a_abutton_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_radio_button @public -&gt; &lt;radio_button_h&gt; ;;</code></td></tr></table>
+<p>ラジオボタンを作成します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.6.4">4.6.4. ボタングループ</h3>
+<p>構成する複数のラジオボタンのうち，一つだけを選択状態に維持します。
+実体は，<code>javax.swing.ButtonGroup</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;button_group_h&gt; @opaque ;;</code></td></tr></table>
+<p>ボタングループへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj button_group_h @public -&gt; &lt;button_group_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_button_group @public -&gt; &lt;button_group_h&gt; ;;</code></td></tr></table>
+<p>ボタングループを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;button_group_h&gt; *Button_group &lt;radio_button_h&gt; *Radio_button button_group_add_button | add_button @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>ラジオボタンを追加します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="4.7">4.7. 文字・図形の表示</h2>
+<p>文字，図形を表示させるオブジェクトです。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.7.1">4.7.1. ラベル</h3>
+<p>文字列を表示します。
+実体は，<code>javax.swing.JLabel</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;label_h&gt; @opaque ;;</code></td></tr></table>
+<p>ラベルへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj label_h @public -&gt; &lt;label_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;label_h&gt; *Label label_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;label_h&gt; *Label label_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;cstr&gt; *Text create_label @public -&gt; &lt;label_h&gt; ;;</code></td></tr></table>
+<p><code>Text</code>をテキストとして持つラベルを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;label_h&gt; *Label label_get_text | get_text @public -&gt; &lt;cstr&gt; ;;</code></td></tr></table>
+<p>テキストを取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;label_h&gt; *Label &lt;cstr&gt; *Text label_set_text | set_text @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>テキストを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;label_h&gt; *Label &lt;horizontal_alignment&gt; *Align label_set_horizontal_alignment | set_horizontal_alignment @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>水平方向のアラインメント（配置）を設定します。</p>
+
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;label_h&gt; *Label &lt;vertical_alignment&gt; *Align label_set_vertical_alignment | set_vertical_alignment @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>垂直方向のアラインメント（配置）を設定します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.7.2">4.7.2. 画像</h3>
+<p>画像を表示します。
+実体は，<code>java.awt.Image</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;image_h&gt; @opaque ;;</code></td></tr></table>
+<p>画像へのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj image_h @public -&gt; &lt;image_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;cstr&gt; *File_path create_image_from_file @public -&gt; &lt;image_h&gt; ;;</code></td></tr></table>
+<p>画像ファイルを読み込み画像を作成します。
+GIF，PNG，JPEG形式が使用できます。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.7.3">4.7.3. アイコン</h3>
+<p>アイコンを表示します。
+実体は，<code>javax.swing.Icon</code>です。 </p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;icon_h&gt; @opaque ;;</code></td></tr></table>
+<p>アイコンへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj icon_h @public -&gt; &lt;icon_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;image_h&gt; *Image create_icon @public -&gt; &lt;icon_h&gt; ;;</code></td></tr></table>
+<p>アイコンを作成します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.7.4">4.7.4. キャンバス</h3>
+<p>図形や文字列を表示するためのGUI部品です。
+描画アクションを指定することによって，自由な描画が可能です。
+Swingには直接対応するクラスはなく，<code>javax.swing.JPanel</code>を使用して実装しています。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;canvas_h&gt; @opaque ;;</code></td></tr></table>
+<p>キャンバスへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj canvas_h @public -&gt; &lt;canvas_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;canvas_h&gt; *Canvas canvas_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;canvas_h&gt; *Canvas canvas_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_canvas @public -&gt; &lt;canvas_h&gt; ;;</code></td></tr></table>
+<p>キャンバスを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;canvas_h&gt; *Canvas &lt;paint_action list&gt; *Paint_actions canvas_set_paint_actions | set_paint_actions @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>描画アクションを設定します。
+リストの順で図形や文字列を描画します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;paint_action&gt; @public :=
+| &lt;color&gt; pa_set_color$
+| &lt;font&gt; pa_set_font$
+| &lt;point&gt; &lt;point&gt; pa_draw_line$
+| &lt;point list&gt; pa_draw_polyline$
+| &lt;point&gt; &lt;dimension&gt; pa_draw_rect$
+| &lt;point&gt; &lt;dimension&gt; pa_fill_rect$
+| &lt;point list&gt; pa_draw_polygon$
+| &lt;point list&gt; pa_fill_polygon$
+| &lt;point&gt; &lt;dimension&gt; pa_draw_oval$
+| &lt;point&gt; &lt;dimension&gt; pa_fill_oval$
+| &lt;point&gt; &lt;dimension&gt; &lt;int&gt; &lt;int&gt; pa_draw_arc$
+| &lt;point&gt; &lt;dimension&gt; &lt;int&gt; &lt;int&gt; pa_fill_arc$
+| &lt;image_h&gt; &lt;point&gt; &lt;dimension maybe&gt; &lt;color maybe&gt; pa_draw_image$
+| &lt;cstr&gt; &lt;point&gt; pa_draw_string$
+| &lt;cstr&gt; &lt;point&gt; &lt;int&gt; &lt;horizontal_alignment&gt; pa_draw_string2$
+| &lt;cstr&gt; &lt;point&gt; &lt;dimension&gt; &lt;horizontal_alignment&gt; &lt;vertical_alignment&gt; pa_draw_string3$ ;;</code></td></tr></table>
+<p>描画アクションを表します。<br/>
+<code>pa_set_color$</code>：これ以降の描画の色を指定します。<br/>
+<code>pa_set_font$</code>：これ以降のテキスト描画のフォントを指定します。<br/>
+<code>pa_draw_line$</code>：2点を結ぶ直線を描画します。<br/>
+<code>pa_draw_polyline$</code>：点を順に結ぶ直線を描画します。<br/>
+<code>pa_draw_rect$</code>：矩形を描画します。左上の頂点の位置と幅，高さを指定します。<br/>
+<code>pa_fill_rect$</code>：矩形を塗りつぶします。左上の頂点の位置と幅，高さを指定します。<br/>
+<code>pa_draw_polygon$</code>：多角形を描画します。各頂点を指定します。<br/>
+<code>pa_fill_polygon$</code>：多角形を塗りつぶします。各頂点を指定します。<br/>
+<code>pa_draw_oval$</code>：矩形に内接する楕円を描画します。<br/>
+<code>pa_fill_oval$</code>：矩形に内接する楕円を塗りつぶします。<br/>
+<code>pa_draw_arc$</code>：矩形に内接する楕円の弧を描画します。開始角度と描画する角度を指定します。<br/>
+<code>pa_fill_arc$</code>：矩形に内接する楕円の一部となる扇型を塗りつぶします。開始角度と描画する角度を指定します。<br/>
+<code>pa_draw_image$</code>：画像を描画します。<br/>
+<code>pa_draw_string$</code>：文字列を描画します。<br/>
+<code>pa_draw_string2$</code>：文字列を描画します。描画領域の幅と水平方向のアラインメントを指定します。<br/>
+<code>pa_draw_string3$</code>：文字列を描画します。描画領域の矩形と水平・垂直方向のアラインメントを指定します。
+</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="4.8">4.8. テキスト入力</h2>
+<p>テキストを入力するGUI部品です。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.8.1">4.8.1. テキストコンポーネント</h3>
+<p>テキストを入力するGUI部品の基底クラスです。
+実体は，<code>javax.swing.text.JTextComponent</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;a_text_component_h&gt; @opaque ;;</code></td></tr></table>
+<p>テキストコンポーネントへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj a_text_component_h @public -&gt; &lt;a_text_component_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_text_component_h&gt; *Text_comp a_text_component_instance | instance @public -&gt; &lt;swing_obj&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報を取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_text_component_h&gt; *Text_comp a_text_component_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;a_text_component_h&gt; *Text_comp a_text_component_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_text_component_h&gt; *Text_comp a_text_component_get_document | get_document @public -&gt; &lt;a_document_h&gt; ;;</code></td></tr></table>
+<p>抽象ドキュメントを取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_text_component_h&gt; *Text_comp &lt;a_document_h&gt; *Doc a_text_component_set_document | set_document @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>抽象ドキュメントを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_text_component_h&gt; *Text_comp a_text_component_get_text | get_text @public -&gt; &lt;cstr&gt; ;;</code></td></tr></table>
+<p>テキストを取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_text_component_h&gt; *Text_comp &lt;cstr&gt; *Text a_text_component_set_text | set_text @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>テキストを設定します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.8.2">4.8.2. テキストフィールド</h3>
+<p>一行のテキストを入力するGUI部品です。
+実体は，<code>javax.swing.text.JTextField</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;text_field_h&gt; @opaque ;;</code></td></tr></table>
+<p>テキストフィールドへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj text_field_h @public -&gt; &lt;text_field_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;text_field_h&gt; *Text_field text_field_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;text_field_h&gt; *Text_field text_field_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;
+eval &lt;text_field_h&gt; *Text_field text_field_as_text_component | as_text_component @public -&gt; &lt;a_text_component_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_text_field_with_plain_document | create_text_field @public -&gt; &lt;text_field_h&gt; ;;</code></td></tr></table>
+<p>プレーンドキュメントを持つテキストフィールドを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_document_h&gt; *Doc create_text_field @public -&gt; &lt;text_field_h&gt; ;;</code></td></tr></table>
+<p>指定された抽象ドキュメントを持つテキストフィールドを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;text_field_h&gt; *Text_field &lt;listener_h&gt; *Lis text_field_add_action_listener | add_action_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>ActionListener</code>を追加します。
+<code>ActionListener</code>は，<code>Enter</code>キーが押下されると起動されます。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;text_field_h&gt; *Text_field &lt;listener_h&gt; *Lis text_field_remove_action_listener | remove_action_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>ActionListener</code>を削除します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;text_field_h&gt; *Text_field &lt;cstr&gt; *Command text_field_set_action_command | set_action_command @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>アクションコマンドを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;text_field_h&gt; *Text_field &lt;int&gt; *Columns text_field_set_columns | set_columns @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>表示上の桁数を設定します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.8.3">4.8.3. テキストエリア</h3>
+<p>複数行のテキストを入力するGUI部品です。
+実体は，<code>javax.swing.text.JTextArea</code>です。 </p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;text_area_h&gt; @opaque ;;</code></td></tr></table>
+<p>テキストエリアへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj text_area_h @public -&gt; &lt;text_area_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;text_area_h&gt; *Text_Area text_area_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;text_area_h&gt; *Text_Area text_area_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;
+eval &lt;text_area_h&gt; *Text_area text_area_as_text_component | as_text_component @public -&gt; &lt;a_text_component_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_text_area_with_plain_document | create_text_area @public -&gt; &lt;text_area_h&gt; ;;</code></td></tr></table>
+<p>プレーンドキュメントを持つテキストエリアを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_document_h&gt; *Doc create_text_area @public -&gt; &lt;text_area_h&gt; ;;</code></td></tr></table>
+<p>指定された抽象ドキュメントを持つテキストエリアを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;text_area_h&gt; *Text_area &lt;int&gt; *Columns text_area_set_columns | set_columns @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>表示上の桁数を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;text_area_h&gt; *Text_area &lt;int&gt; *Rows text_area_set_rows | set_rows @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>表示上の行数を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;text_area_h&gt; *Text_area &lt;line_wrap_policy&gt; *Line_wrap text_area_set_line_wrap | set_line_wrap @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>表示上の行末以降の処理（回り込み）を指定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;line_wrap_policy&gt; @public :=
+| no_wrap$
+| char_wrap$
+| word_wrap$ ;;</code></td></tr></table>
+<p>表示上の行末以降の処理（回り込み）を表します。<br/>
+<code>no_wrap$</code>：回り込みません。<br/>
+<code>char_wrap$</code>：文字の切れ目で次の行に回り込みます。<br/>
+<code>word_wrap$</code>：単語の切れ目で次の行に回り込みます。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;text_area_h&gt; *Text_area text_area_get_document | get_document @public -&gt; &lt;a_document_h&gt; ;;</code></td></tr></table>
+<p>抽象ドキュメントを取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;text_area_h&gt; *Text_area &lt;a_document_h&gt; *Doc text_area_set_document | set_document @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>抽象ドキュメントを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;text_area_h&gt; *Text_area &lt;cstr&gt; *Text text_area_append | append @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>文字列を連結します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.8.4">4.8.4. 抽象ドキュメント</h3>
+<p>テキストのドキュメントモデルの基底クラスです。
+実体は，<code>javax.swing.text.Document</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;a_document_h&gt; @opaque ;;</code></td></tr></table>
+<p>抽象ドキュメントへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj a_document_h @public -&gt; &lt;a_document_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;a_document_h&gt; *Doc a_document_instance | instance @public -&gt; &lt;swing_obj&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報を取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_document_h&gt; *Doc &lt;listener_h&gt; *Lis document_add_document_listener | add_document_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>DocumentListener</code>を追加します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_document_h&gt; *Doc &lt;listener_h&gt; *Lis document_remove_document_listener | remove_document_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>DocumentListener</code>を削除します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_document_h&gt; *Doc a_document_get_length | get_length @public -&gt; &lt;int&gt; ;;</code></td></tr></table>
+<p>長さを取得します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_document_h&gt; *Doc &lt;int&gt; *Ofst &lt;int&gt; *Len a_document_get_text | get_text @public -&gt; &lt;cstr&gt; ;;</code></td></tr></table>
+<p><code>Ofst</code>の位置から長さ<code>Len</code>のテキストを取得します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.8.5">4.8.5. プレーンドキュメント</h3>
+<p>表示属性（サイズ，色，フォント等）を持たないテキストのドキュメントモデルです。
+実体は，<code>javax.swing.text.PlainDocument</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;plain_document_h&gt; @opaque ;;</code></td></tr></table>
+<p>プレーンドキュメントへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj plain_document_h @public -&gt; &lt;plain_document_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;plain_document_h&gt; *Doc plain_document_as_document | as_document @public -&gt; &lt;a_document_h&gt; ;;</code></td></tr></table>
+<p>抽象ドキュメントへのハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_plain_document @public -&gt; &lt;plain_document_h&gt; ;;</code></td></tr></table>
+<p>プレーンドキュメントを作成します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="4.9">4.9. その他</h2>
+<p>提供されるその他のオブジェクトです。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.9.1">4.9.1. カーソル</h3>
+<p>マウスカーソルを実装します。
+実体は，<code>java.awt.Cursor</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;cursor_h&gt; @opaque ;;</code></td></tr></table>
+<p>カーソルへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj cursor_h @public -&gt; &lt;cursor_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;cstr&gt; *Name get_cursor @public -&gt; &lt;cursor_h&gt; ;;</code></td></tr></table>
+<p><code>Name</code>に指定した名前のカーソルを取得します。
+次の名前のカーソルはSwingで定義されています。<br/>
+<code>&quot;*default&quot;</code>，<code>&quot;*hand&quot;</code>，<code>&quot;*crosshair&quot;</code>，<code>&quot;*text&quot;</code>，<code>&quot;*move&quot;</code>，<code>&quot;*wait&quot;</code>，<code>&quot;*north-resize&quot;</code>，<code>&quot;*northeast-resize&quot;</code>，<code>&quot;*east-resize&quot;</code>，<code>&quot;*southeast-resize&quot;</code>，<code>&quot;*south-resize&quot;</code>，<code>&quot;*southwest-resize&quot;</code>，<code>&quot;*west-resize&quot;</code>，<code>&quot;*northwest-resize&quot;</code></p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.9.2">4.9.2. タイマ</h3>
+<p>指定した時間が経過するとイベントを発生させます。
+実体は，<code>javax.swing.Timer</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;timer_h&gt; @opaque ;;</code></td></tr></table>
+<p>タイマへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj timer_h @public -&gt; &lt;timer_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;int&gt; *Delay &lt;int maybe&gt; *Repeat_interval_ create_timer @public -&gt; &lt;timer_h&gt; ;;</code></td></tr></table>
+<p><code>Delay</code>ミリ秒後にイベントを発生させる（<code>ActionListener</code>を起動する）タイマを作成します。
+<code>Repeat_interval_</code>を指定すると繰り返しイベントを発生させます。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;timer_h&gt; *Timer &lt;listener_h&gt; *Lis timer_add_action_listener | add_action_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>ActionListener</code>を追加します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;timer_h&gt; *Timer &lt;listener_h&gt; *Lis timer_remove_action_listener | remove_action_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>ActionListener</code>を削除します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;timer_h&gt; *Timer &lt;cstr&gt; *Command timer_set_action_command | set_action_command @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>アクションコマンドを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;timer_h&gt; *Timer timer_start | start @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>タイマを開始します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;timer_h&gt; *Timer timer_stop | stop @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>タイマを停止します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h1 id="5">5. Swingオブジェクト以外のデータ・関数</h1>
+<p>
+</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="5.1">5.1. 例外</h2>
+<p>SgSwingで追加される例外です。</p>
+
+<table border width="100%"><tr><td class="def"><code>extend &lt;exc_desc&gt; @public := &lt;cstr&gt; swing_error$ ;;</code></td></tr></table>
+<p>Swingでの例外発生を表します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="5.2">5.2. コンテキスト</h2>
+<p>Swing呼び出しのコンテキストを提供します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;context_h&gt; @opaque ;;</code></td></tr></table>
+<p>コンテキストを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval initiator_context | icx @public -&gt; &lt;context_h&gt; ;;</code></td></tr></table>
+<p>イニシエータ・コンテキストを取得します。</p>
+
+<h2 id="5.3">5.3. リスナ</h2>
+<p>Swingで発生したイベントを受け取ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>alias type &lt;event_proc&gt; @public := &lt;context_h cstr event_info void fun&gt; ;;</code></td></tr></table>
+<p>イベント処理ルーチンの型を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>alias type &lt;event_info&gt; @public := &lt;cstr event_info_d &quot;sango.util.map&quot;.map.map&gt; ;;</code></td></tr></table>
+<p>イベント情報の型を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;event_info_d&gt; @public :=
+| &lt;swing_obj&gt; obj_eid$
+| &lt;bool&gt; bool_eid$
+| &lt;int&gt; int_eid$
+| &lt;char&gt; char_eid$
+| &lt;cstr&gt; cstr_eid$
+| &lt;vk&gt; vk_eid$ ;;</code></td></tr></table>
+<p>各イベント情報を表します。
+今後，使用するデータの型の追加に合わせデータ構築子が追加される可能性があります。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;listener_h&gt; @opaque ;;</code></td></tr></table>
+<p>リスナへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;event_proc&gt; *Event_proc create_listener @public -&gt; &lt;listener_h&gt; ;;</code></td></tr></table>
+<p>リスナを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;listener_h&gt; *Lis listener_event_proc | event_proc @public -&gt; &lt;event_proc&gt; ;;</code></td></tr></table>
+<p>イベント処理ルーチンを取得します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="5.4">5.4. 座標，矩形など</h2>
+<p>xy座標，矩形の大きさなどを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;point&gt; @public :=
+  x: &lt;int&gt;
+  y: &lt;int&gt;
+  point$ ;;</code></td></tr></table>
+<p>座標を表します。
+右方向がx軸，下方向がy軸です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;dimension&gt; @public :=
+  width: &lt;int&gt;
+  height: &lt;int&gt;
+  dimension$ ;;</code></td></tr></table>
+<p>x軸方向，y軸方向の大きさを表します</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="5.5">5.5. アラインメントなど</h2>
+<p>位置合わせなどを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;horizontal_alignment&gt; @public :=
+| horizontal_left$
+| horizontal_center$
+| horizontal_right$
+| horizontal_leading$
+| horizontal_trailing$ ;;</code></td></tr></table>
+<p>水平方向のアラインメントを表します。
+<code>horizontal_leading$</code>は先頭，<code>horizontal_trailing$</code>は末尾を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;vertical_alignment&gt; @public :=
+| vertical_top$
+| vertical_center$
+| vertical_bottom$ ;;</code></td></tr></table>
+<p>水平方向のアラインメントを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;insets&gt; @public :=
+  top: &lt;int&gt;
+  left: &lt;int&gt;
+  bottom: &lt;int&gt;
+  right: &lt;int&gt;
+  insets$ ;;</code></td></tr></table>
+<p>上下左右の余白を表します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h2 id="5.6">5.6. キー</h2>
+<p>キーを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;vk&gt; @public :=
+| vk_enter$ | vk_back_space$ | vk_tab$ | vk_cancel$
+| vk_clear$ | vk_shift$ | vk_control$ | vk_alt$
+| vk_pause$ | vk_caps_lock$ | vk_escape$ | vk_space$
+| vk_page_up$ | vk_page_down$
+| vk_end$ | vk_home$
+| vk_left$ | vk_up$ | vk_right$ | vk_down$
+| vk_comma$ | vk_minus$ | vk_period$ | vk_slash$
+| vk_0$ | vk_1$ | vk_2$ | vk_3$ | vk_4$
+| vk_5$ | vk_6$ | vk_7$ | vk_8$ | vk_9$
+| vk_semicolon$ | vk_equals$
+| vk_a$ | vk_b$ | vk_c$ | vk_d$
+| vk_e$ | vk_f$ | vk_g$ | vk_h$
+| vk_i$ | vk_j$ | vk_k$ | vk_l$
+| vk_m$ | vk_n$ | vk_o$ | vk_p$
+| vk_q$ | vk_r$ | vk_s$ | vk_t$
+| vk_u$ | vk_v$ | vk_w$ | vk_x$
+| vk_y$ | vk_z$
+| vk_open_bracket$ | vk_back_slash$ | vk_close_bracket$
+| vk_numpad0$ | vk_numpad1$ | vk_numpad2$ | vk_numpad3$
+| vk_numpad4$ | vk_numpad5$ | vk_numpad6$ | vk_numpad7$
+| vk_numpad8$ | vk_numpad9$
+| vk_multiply$ | vk_add$ | vk_separator$ | vk_subtract$
+| vk_decimal$ | vk_divide$ | vk_delete$
+| vk_num_lock$ | vk_scroll_lock$
+| vk_f1$ | vk_f2$ | vk_f3$ | vk_f4$
+| vk_f5$ | vk_f6$ | vk_f7$ | vk_f8$
+| vk_f9$ | vk_f10$ | vk_f11$ | vk_f12$
+| vk_f13$ | vk_f14$ | vk_f15$ | vk_f16$
+| vk_f17$ | vk_f18$ | vk_f19$ | vk_f20$
+| vk_f21$ | vk_f22$ | vk_f23$ | vk_f24$
+| vk_printscreen$ | vk_insert$ | vk_help$ | vk_meta$
+| vk_back_quote$ | vk_quote$
+| vk_kp_up$ | vk_kp_down$ | vk_kp_left$ | vk_kp_right$
+| vk_dead_grave$ | vk_dead_acute$ | vk_dead_circumflex$
+| vk_dead_tilde$ | vk_dead_macron$ | vk_dead_breve$
+| vk_dead_abovedot$ | vk_dead_diaeresis$ | vk_dead_abovering$
+| vk_dead_doubleacute$ | vk_dead_caron$ | vk_dead_cedilla$
+| vk_dead_ogonek$ | vk_dead_iota$ | vk_dead_voiced_sound$
+| vk_dead_semivoiced_sound$
+| vk_ampersand$ | vk_asterisk$ | vk_quotedbl$
+| vk_less$ | vk_greater$
+| vk_braceleft$ | vk_braceright$
+| vk_at$ | vk_colon$
+| vk_circumflex$ | vk_dollar$ | vk_euro_sign$
+| vk_exclamation_mark$ | vk_inverted_exclamation_mark$
+| vk_left_parenthesis$
+| vk_number_sign$
+| vk_plus$
+| vk_right_parenthesis$
+| vk_underscore$
+| vk_final$
+| vk_convert$ | vk_nonconvert$
+| vk_accept$ | vk_modechange$
+| vk_kana$ | vk_kanji$
+| vk_alphanumeric$ | vk_katakana$ | vk_hiragana$
+| vk_full_width$ | vk_half_width$
+| vk_roman_characters$
+| vk_all_candidates$ | vk_previous_candidate$
+| vk_code_input$
+| vk_japanese_katakana$ | vk_japanese_hiragana$ | vk_japanese_roman$
+| vk_kana_lock$
+| vk_input_method_on_off$
+| vk_cut$ | vk_copy$ | vk_paste$
+| vk_undo$ | vk_again$
+| vk_find$ | vk_props$ | vk_stop$
+| vk_compose$ | vk_alt_graph$
+| vk_begin$
+| vk_context_menu$
+| vk_windows$
+| vk_undefined$ ;;</code></td></tr></table>
+<p>キーの論理コードを表します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="5.7">5.7. 色</h3>
+<p>sRGB色空間内の色を扱います。
+RGB各成分とアルファ値から成り，いずれも0～255の範囲の整数をとります。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;color&gt; @protected :=
+  alpha_value: &lt;int&gt;
+  red_value: &lt;int&gt;
+  green_value: &lt;int&gt;
+  blue_value: &lt;int&gt;
+  color$ ;;</code></td></tr></table>
+<p>色を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;int&gt; *Alpha &lt;int&gt; *Red &lt;int&gt; *Green &lt;int&gt; *Blue new_color | color @public -&gt; &lt;color&gt; ;;</code></td></tr></table>
+<p>色を作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;int&gt; *Red &lt;int&gt; *Green &lt;int&gt; *Blue new_opaque_color | new_color | color @public -&gt; &lt;color&gt; ;;</code></td></tr></table>
+<p>不透明な色を作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;int&gt; *ARGB argb_int_to_color | argb_color @public -&gt; &lt;color&gt; ;;</code></td></tr></table>
+<p>指定されたアルファ値とRGB成分を持つ色を作成します。
+LSBをビット0としたとき，ビット31-24にアルファ値，ビット23-16に赤成分，ビット15-8に緑成分，ビット7-0に青成分を指定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;int&gt; *RGB rgb_int_to_color | rgb_color @public -&gt; &lt;color&gt; ;;</code></td></tr></table>
+<p>指定されたRGB値を持つ不透明な色を作成します。
+LSBをビット0としたとき，ビット23-16に赤成分，ビット15-8に緑成分，ビット7-0に青成分を指定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval black_color | black @public -&gt; &lt;color&gt; ;;
+eval blue_color | blue @public -&gt; &lt;color&gt; ;;
+eval cyan_color | cyan @public -&gt; &lt;color&gt; ;;
+eval dark_gray_color | dark_gray @public -&gt; &lt;color&gt; ;;
+eval gray_color | gray @public -&gt; &lt;color&gt; ;;
+eval green_color | green @public -&gt; &lt;color&gt; ;;
+eval light_gray_color | light_gray @public -&gt; &lt;color&gt; ;;
+eval magenta_color | magenta @public -&gt; &lt;color&gt; ;;
+eval orange_color | orange @public -&gt; &lt;color&gt; ;;
+eval pink_color | pink @public -&gt; &lt;color&gt; ;;
+eval red_color | red @public -&gt; &lt;color&gt; ;;
+eval white_color | white @public -&gt; &lt;color&gt; ;;
+eval yellow_color | yellow @public -&gt; &lt;color&gt; ;;</code></td></tr></table>
+<p>それぞれの色を返します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="5.8">5.8. フォント</h3>
+<p>文字のフォントを扱います。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;font&gt; @opaque ;;</code></td></tr></table>
+<p>フォントを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;font_style&gt; @public :=
+| plain_style$
+| italic_style$
+| bold_style$
+| bold_italic_style$ ;;</code></td></tr></table>
+<p>スタイルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;cstr&gt; *Name &lt;font_style&gt; *Style &lt;int&gt; *Points create_font @public -&gt; &lt;font&gt; ;;</code></td></tr></table>
+<p>フォントを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval serif_font | serif @public -&gt; &lt;cstr&gt; ;;
+eval sans_serif_font | sans_serif @public -&gt; &lt;cstr&gt; ;;
+eval monospaced_font | monospaced @public -&gt; &lt;cstr&gt; ;;
+eval dialog_font | dialog @public -&gt; &lt;cstr&gt; ;;
+eval dialog_input_font | dialog_input @public -&gt; &lt;cstr&gt; ;;</code></td></tr></table>
+<p>それぞれ，<code>&quot;Serif&quot;</code>，<code>&quot;SansSerif&quot;</code>，<code>&quot;Monospaced&quot;</code>，<code>&quot;Dialog&quot;</code>，<code>&quot;DialogInput&quot;</code>を返します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h1 id="A">A. Swingオブジェクト</h1>
+
+<table border>
+<tr><th>オブジェクト</th>
+<th>型</th>
+<th>Swing</th>
+<th>基底クラスのハンドル</th></tr>
+<tr><td>コンポーネント</td>
+<td><code>a_component_h</code></td>
+<td><code>java.awt.Component</code></td>
+<td>-</td></tr>
+<tr><td>Jコンポーネント</td>
+<td><code>a_jcomponent_h</code></td>
+<td><code>javax.swing.JComponent</code></td>
+<td><code>a_component_h</code></td></tr>
+<tr><td>抽象ウィンドウ</td>
+<td><code>a_window_h</code></td>
+<td><code>java.awt.Window</code></td>
+<td><code>a_component_h</code></td></tr>
+<tr><td>フレーム</td>
+<td><code>frame_h</code></td>
+<td><code>javax.swing.JFrame</code></td>
+<td><code>a_component_h a_window_h</code></td></tr>
+<tr><td>ダイアログ</td>
+<td><code>dialog_h</code></td>
+<td><code>javax.swing.JDialog</code></td>
+<td><code>a_component_h a_window_h</code></td></tr>
+<tr><td>メニューバー</td>
+<td><code>menu_bar_h</code></td>
+<td><code>javax.swing.JMenuBar</code></td>
+<td>-</td></tr>
+<tr><td>メニュー</td>
+<td><code>menu_h</code></td>
+<td><code>javax.swing.JMenu</code></td>
+<td>-</td></tr>
+<tr><td>ポップアップメニュー</td>
+<td><code>popup_menu_h</code></td>
+<td><code>javax.swing.JPopupMenu</code></td>
+<td>-</td></tr>
+<tr><td>メニュー項目</td>
+<td><code>menu_item_h</code></td>
+<td><code>javax.swing.JMenuItem</code></td>
+<td><code>a_component_h a_jcomponent_h a_abutton_h</code></td></tr>
+<tr><td>抽象パネル</td>
+<td><code>a_panel_h</code></td>
+<td><code>javax.swing.JPanel</code></td>
+<td><code>a_component_h a_jcomponent_h</code></td></tr>
+<tr><td>BorderLayoutパネル</td>
+<td><code>border_layout_panel_h</code></td>
+<td><code>javax.swing.JPanel</code></td>
+<td><code>a_component_h a_jcomponent_h a_panel_h</code></td></tr>
+<tr><td>GridLayoutパネル</td>
+<td><code>grid_layout_panel_h</code></td>
+<td><code>javax.swing.JPanel</code></td>
+<td><code>a_component_h a_jcomponent_h a_panel_h</code></td></tr>
+<tr><td>スクロールペイン</td>
+<td><code>scroll_pane_h</code></td>
+<td><code>javax.swing.JScrollPane</code></td>
+<td><code>a_component_h a_jcomponent_h</code></td></tr>
+<tr><td>抽象ボーダー</td>
+<td><code>a_border_h</code></td>
+<td><code>javax.swing.Border</code></td>
+<td>-</td></tr>
+<tr><td><code>Empty</code>ボーダー</td>
+<td><code>empty_border_h</code></td>
+<td><code>javax.swing.border.EmptyBorder</code></td>
+<td><code>a_border_h</code></td></tr>
+<tr><td><code>Etched</code>ボーダー</td>
+<td><code>etched_border_h</code></td>
+<td><code>javax.swing.border.EchtedBorder</code></td>
+<td><code>a_border_h</code></td></tr>
+<tr><td><code>Titled</code>ボーダー</td>
+<td><code>titled_border_h</code></td>
+<td><code>javax.swing.border.TitledBorder</code></td>
+<td><code>a_border_h</code></td></tr>
+<tr><td>抽象ボタン</td>
+<td><code>a_abutton_h</code></td>
+<td><code>javax.swing.AbstractButton</code></td>
+<td><code>a_component_h a_jcomponent_h</code></td></tr>
+<tr><td>ボタン</td>
+<td><code>button_h</code></td>
+<td><code>javax.swing.JButton</code></td>
+<td><code>a_component_h a_jcomponent_h a_abutton_h</code></td></tr>
+<tr><td>チェックボックス</td>
+<td><code>check_box_h</code></td>
+<td><code>javax.swing.JCheckBox</code></td>
+<td><code>a_component_h a_jcomponent_h a_abutton_h</code></td></tr>
+<tr><td>ラジオボタン</td>
+<td><code>radio_button_h</code></td>
+<td><code>javax.swing.JRadioButton</code></td>
+<td><code>a_component_h a_jcomponent_h a_abutton_h</code></td></tr>
+<tr><td>ボタングループ</td>
+<td><code>button_group_h</code></td>
+<td><code>java.awt.ButtonGroup</code></td>
+<td>-</td></tr>
+<tr><td>ラベル</td>
+<td><code>label_h</code></td>
+<td><code>javax.swing.JLabel</code></td>
+<td><code>a_component_h a_jcomponent_h</code></td></tr>
+<tr><td>画像</td>
+<td><code>image_h</code></td>
+<td><code>java.awt.Image</code></td>
+<td>-</td></tr>
+<tr><td>アイコン</td>
+<td><code>icon_h</code></td>
+<td><code>javax.swing.Icon</code></td>
+<td>-</td></tr>
+<tr><td>キャンバス</td>
+<td><code>canvas_h</code></td>
+<td><code>javax.swing.JPanel</code></td>
+<td><code>a_component_h a_jcomponent_h</code></td></tr>
+<tr><td>テキストコンポーネント</td>
+<td><code>a_text_component_h</code></td>
+<td><code>javax.swing.JTextComponent</code></td>
+<td><code>a_component_h a_jcomponent_h</code></td></tr>
+<tr><td>テキストフィールド</td>
+<td><code>text_field_h</code></td>
+<td><code>javax.swing.JTextField</code></td>
+<td><code>a_component_h a_jcomponent_h a_text_component_h</code></td></tr>
+<tr><td>テキストエリア</td>
+<td><code>text_area_h</code></td>
+<td><code>javax.swing.JTextArea</code></td>
+<td><code>a_component_h a_jcomponent_h a_text_component_h</code></td></tr>
+<tr><td>抽象ドキュメント</td>
+<td><code>a_document_h</code></td>
+<td><code>javax.swing.text.Document</code></td>
+<td>-</td></tr>
+<tr><td>プレーンドキュメント</td>
+<td><code>plain_document_h</code></td>
+<td><code>javax.swing.text.PlainDocument</code></td>
+<td><code>a_document_h</code></td></tr>
+<tr><td>カーソル</td>
+<td><code>cursor_h</code></td>
+<td><code>java.awt.Cursor</code></td>
+<td>-</td></tr>
+<tr><td>タイマ</td>
+<td><code>timer_h</code></td>
+<td><code>javax.swing.Timer</code></td>
+<td>-</td></tr>
+</table>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h1 id="B">B. イベント</h1>
+
+<table border>
+<tr><th colspan=2>Swing</th>
+<th colspan=2>SgSwing</th></tr>
+<tr><th>リスナ</th>
+<th>メソッド</th>
+<th>イベント名</th>
+<th>イベント情報（キー 型 説明）</th></tr>
+<tr><td><code>ActionListener</code></td>
+<td><code>actionPerformed</code></td>
+<td><code>action.performed</code></td>
+<td><ul><li><code>action_command &lt;cstr&gt;</code> アクションコマンド（指定されていない場合は空文字列）</li></ul></td></tr>
+<tr><td rowspan=3><code>DocumentListener</code></td>
+<td><code>changedUpdate</code></td>
+<td><code>document.changed</code></td>
+<td rowspan=3></td></tr>
+<tr><td><code>insertUpdate</code></td>
+<td><code>document.insert</code></td></tr>
+<tr><td><code>removeUpdate</code></td>
+<td><code>document.removed</code></td></tr>
+<tr><td rowspan=2><code>FocusListener</code></td>
+<td><code>focusGained</code></td>
+<td><code>focus.gained</code></td>
+<td rowspan=2></td></tr>
+<tr><td><code>focusLost</code></td>
+<td><code>focus.lost</code></td></tr>
+<tr><td rowspan=3><code>KeyListener</code></td>
+<td><code>keyPressed</code></td>
+<td><code>key.pressed</code></td>
+<td rowspan=2><ul><li><code>key_code &lt;vk&gt;</code> キーのコード</li></ul></td></tr>
+<tr><td><code>keyReleased</code></td>
+<td><code>key.released</code></td></tr>
+<tr><td><code>keyTyped</code></td>
+<td><code>key.typed</code></td>
+<td><ul><li><code>key_char &lt;char&gt;</code> タイプされた文字</li></ul></td></tr>
+<tr><td rowspan=5><code>MouseListener</code></td>
+<td><code>mouseClicked</code></td>
+<td><code>mouse.clicked</code></td>
+<td rowspan=5><ul><li><code>x &lt;int&gt;</code> x座標</li><li><code>y &lt;int&gt;</code> y座標</li><li><code>click_count &lt;int&gt;</code> クリック回数</li><li><code>popup_trigger? &lt;bool&gt;</code> ポップメニューの表示契機</li></ul></td></tr>
+<tr><td><code>mouseEntered</code></td>
+<td><code>mouse.entered</code></td></tr>
+<tr><td><code>mouseExited</code></td>
+<td><code>mouse.exited</code></td></tr>
+<tr><td><code>mousePressed</code></td>
+<td><code>mouse.pressed</code></td></tr>
+<tr><td><code>mouseReleased</code></td>
+<td><code>mouse.released</code></td></tr>
+<tr><td rowspan=2><code>MouseMotionListener</code></td>
+<td><code>mouseDragged</code></td>
+<td><code>mouse.dragged</code></td>
+<td rowspan=2><ul><li><code>x &lt;int&gt;</code> x座標</li><li><code>y &lt;int&gt;</code> y座標</li></ul></td></tr>
+<tr><td><code>mouseMoved</code></td>
+<td><code>mouse.moved</code></td></tr>
+<tr><td rowspan=7><code>WindowListener</code></td>
+<td><code>windowActivated</code></td>
+<td><code>window.activated</code></td>
+<td rowspan=7></td></tr>
+<tr><td><code>windowClosed</code></td>
+<td><code>window.closed</code></td></tr>
+<tr><td><code>windowClosing</code></td>
+<td><code>window.closing</code></td></tr>
+<tr><td><code>windowDeactivated</code></td>
+<td><code>window.deactivated</code></td></tr>
+<tr><td><code>windowDeiconified</code></td>
+<td><code>window.deiconified</code></td></tr>
+<tr><td><code>windowOpened</code></td>
+<td><code>window.opened</code></td></tr>
+</table>
+
+</body>
+</html>
+

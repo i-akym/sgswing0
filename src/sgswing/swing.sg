@@ -1,0 +1,1796 @@
+###########################################################################
+# MIT License                                                             #
+# Copyright (c) 2020 AKIYAMA Isao                                         #
+#                                                                         #
+# Permission is hereby granted, free of charge, to any person obtaining   #
+# a copy of this software and associated documentation files (the         #
+# "Software"), to deal in the Software without restriction, including     #
+# without limitation the rights to use, copy, modify, merge, publish,     #
+# distribute, sublicense, and/or sell copies of the Software, and to      #
+# permit persons to whom the Software is furnished to do so, subject to   #
+# the following conditions:                                               #
+#                                                                         #
+# The above copyright notice and this permission notice shall be          #
+# included in all copies or substantial portions of the Software.         #
+#                                                                         #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,         #
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF      #
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  #
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY    #
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,    #
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       #
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                  #
+###########################################################################
+module "sgswing.swing" ;;
+
+import "sango.actor" -> act ;;
+import "sango.actor.util" -> actu ;;
+import "sango.bool" -> bool ;;
+import "sango.debug" -> debug ;;
+import "sango.io.stdio" -> stdio ;;
+import "sango.list" -> list ;;
+import "sango.system.runtime" -> runtime ;;
+import "sango.util.map" -> map ;;
+import "sango.util.map.simplemap" -> smap ;;
+
+
+###  APIs  ###
+
+# -- exception --
+
+extend <exc_desc> @public := <cstr> swing_error$ ;;
+
+
+# -- context --
+
+data <context_h> @opaque := @native ;;
+
+eval initiator_context | icx @public -> <context_h> {
+  start_keeper,
+  initiator_context_impl
+} ;;
+
+eval initiator_context_impl -> <context_h> @native ;;
+
+
+# -- event listener --
+
+data <listener_h> @opaque := @native ;;
+
+alias type <event_proc> @public := <context_h cstr event_info void fun> ;;
+
+alias type <event_info> @public := <cstr event_info_d map.map> ;;
+
+data <event_info_d> @public :=
+| <swing_obj> obj_eid$
+| <bool> bool_eid$
+| <int> int_eid$
+| <char> char_eid$
+| <cstr> cstr_eid$
+| <vk> vk_eid$ ;;
+
+eval <event_proc> *Event_proc create_listener @public -> <listener_h> {
+  \ <context_h> *ECx <cstr> *E <eid_list> *EIDs ->
+    <void> { ECx E EIDs Event_proc fire_event } = *Fwd,
+  Event_proc Fwd create_listener_impl
+} ;;
+
+eval <listener_h> *Lis listener_event_proc | event_proc @public -> <event_proc> @native ;;
+
+eval <event_proc> *Event_proc <context_h cstr <eid_list> void fun> *Fwd create_listener_impl -> <listener_h> @native ;;
+
+
+# -- Swing object --
+
+data <swing_obj> @public :=
+| <frame_h> frame_obj$
+| <dialog_h> dialog_obj$
+| <menu_bar_h> menu_bar_obj$
+| <menu_h> menu_obj$
+| <popup_menu_h> popup_menu_obj$
+| <menu_item_h> menu_item_obj$
+| <border_layout_panel_h> border_layout_panel_obj$
+| <grid_layout_panel_h> grid_layout_panel_obj$
+| <scroll_pane_h> scroll_pane_obj$
+| <empty_border_h> empty_border_obj$
+| <etched_border_h> etched_border_obj$
+| <titled_border_h> titled_border_obj$
+| <button_h> button_obj$
+| <check_box_h> check_box_obj$
+| <radio_button_h> radio_button_obj$
+| <button_group_h> button_group_obj$
+| <label_h> label_obj$
+| <image_h> image_obj$
+| <icon_h> icon_obj$
+| <canvas_h> canvas_obj$
+| <text_field_h> text_field_obj$
+| <text_area_h> text_area_obj$
+| <plain_document_h> plain_document_obj$
+| <cursor_h> cursor_obj$
+| <timer_h> timer_obj$ ;;
+
+
+# -- abstract component : java.awt.Component --
+
+data <a_component_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj a_component_h @public -> <a_component_h maybe> {
+  Obj case {
+  ; *Frame_h frame_obj$ -> (Frame_h as_component) value$
+  ; *Dialog_h dialog_obj$ -> (Dialog_h as_component) value$
+  ; *Menu_item_h menu_item_obj$ -> (Menu_item_h as_component) value$
+  ; *Border_layout_panel_h border_layout_panel_obj$ -> (Border_layout_panel_h as_component) value$
+  ; *Grid_layout_panel_h grid_layout_panel_obj$ -> (Grid_layout_panel_h as_component) value$
+  ; *Scroll_pane_h scroll_pane_obj$ -> (Scroll_pane_h as_component) value$
+  ; *Button_h button_obj$ -> (Button_h as_component) value$
+  ; *Check_box_h check_box_obj$ -> (Check_box_h as_component) value$
+  ; *Radio_button_h radio_button_obj$ -> (Radio_button_h as_component) value$
+  ; *Label_h label_obj$ -> (Label_h as_component) value$
+  ; *Canvas_h canvas_obj$ -> (Canvas_h as_component) value$
+  ; *Text_field_h text_field_obj$ -> (Text_field_h as_component) value$
+  ; *Text_area_h text_area_obj$ -> (Text_area_h as_component) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <a_component_h> *Comp a_component_instance | instance @public -> <swing_obj> @native ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_add_focus_listener | add_focus_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_install_focus_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_remove_focus_listener | remove_focus_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_uninstall_focus_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_add_mouse_listener | add_mouse_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_install_mouse_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_remove_mouse_listener | remove_mouse_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_uninstall_mouse_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_add_mouse_motion_listener | add_mouse_motion_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_install_mouse_motion_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_remove_mouse_motion_listener | remove_mouse_motion_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_uninstall_mouse_motion_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_add_key_listener | add_key_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_install_key_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_remove_key_listener | remove_key_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_uninstall_key_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <dimension> *Dim a_component_set_size | set_size @public -> <void> {
+  Cx Comp Dim ^a_component_impl_set_size call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <dimension maybe> *Dim_ a_component_set_minimum_size | set_minimum_size @public -> <void> {
+  Cx Comp Dim_ ^a_component_impl_set_minimum_size call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <dimension maybe> *Dim_ a_component_set_maximum_size | set_maximum_size @public -> <void> {
+  Cx Comp Dim_ ^a_component_impl_set_maximum_size call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <dimension maybe> *Dim_ a_component_set_preferred_size | set_preferred_size @public -> <void> {
+  Cx Comp Dim_ ^a_component_impl_set_preferred_size call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp a_component_enabled? | enabled? @public -> <bool> {
+  Cx Comp ^a_component_impl_enabled? call_impl_1_bool
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <bool> *Sw a_component_set_enabled | set_enabled @public -> <void> {
+  Cx Comp Sw ^a_component_impl_set_enabled call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp a_component_repaint | repaint @public -> <void> {
+  Cx Comp ^a_component_impl_repaint call_impl_1_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp a_component_request_focus | request_focus @public -> <bool> {
+  Cx Comp ^a_component_impl_request_focus call_impl_1_bool
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <cursor_h> *Cursor a_component_set_cursor | set_cursor @public -> <void> {
+  Cx Comp Cursor ^a_component_impl_set_cursor call_impl_2_void
+} ;;
+
+# bridge to Swing 
+
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_install_focus_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_uninstall_focus_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_install_mouse_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_uninstall_mouse_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_install_mouse_motion_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_uninstall_mouse_motion_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_install_key_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_uninstall_key_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <dimension> *Dim a_component_impl_set_size -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <dimension maybe> *Dim_ a_component_impl_set_minimum_size -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <dimension maybe> *Dim_ a_component_impl_set_maximum_size -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <dimension maybe> *Dim_ a_component_impl_set_preferred_size -> <void> @native ;;
+eval <context_h> *Cx <bool result_sender> *Ret <a_component_h> *Comp a_component_impl_enabled? -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <bool> *Sw a_component_impl_set_enabled -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp a_component_impl_repaint -> <void> @native ;;
+eval <context_h> *Cx <bool result_sender> *Ret <a_component_h> *Comp a_component_impl_request_focus -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <cursor_h> *Cursor a_component_impl_set_cursor -> <void> @native ;;
+
+
+# -- abstract component : javax.swing.JComponent --
+
+data <a_jcomponent_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj a_jcomponent_h @public -> <a_jcomponent_h maybe> {
+  Obj case {
+  ; *Menu_item_h menu_item_obj$ -> (Menu_item_h as_jcomponent) value$
+  ; *Border_layout_panel_h border_layout_panel_obj$ -> (Border_layout_panel_h as_jcomponent) value$
+  ; *Grid_layout_panel_h grid_layout_panel_obj$ -> (Grid_layout_panel_h as_jcomponent) value$
+  ; *Scroll_pane_h scroll_pane_obj$ -> (Scroll_pane_h as_jcomponent) value$
+  ; *Button_h button_obj$ -> (Button_h as_jcomponent) value$
+  ; *Check_box_h check_box_obj$ -> (Check_box_h as_jcomponent) value$
+  ; *Radio_button_h radio_button_obj$ -> (Radio_button_h as_jcomponent) value$
+  ; *Label_h label_obj$ -> (Label_h as_jcomponent) value$
+  ; *Canvas_h canvas_obj$ -> (Canvas_h as_jcomponent) value$
+  ; *Text_field_h text_field_obj$ -> (Text_field_h as_jcomponent) value$
+  ; *Text_area_h text_area_obj$ -> (Text_area_h as_jcomponent) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <a_jcomponent_h> *Comp a_jcomponent_instance | instance @public -> <swing_obj> @native ;;
+
+eval <context_h> *Cx <a_jcomponent_h> *Comp <bool> *Sw a_jcomponent_set_opaque | set_opaque @public -> <void> {
+  Cx Comp Sw ^a_jcomponent_impl_set_opaque call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_jcomponent_h> *Comp <color> *Color a_jcomponent_set_background | set_background @public -> <void> {
+  Cx Comp Color ^a_jcomponent_impl_set_background call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_jcomponent_h> *Comp <a_border_h> *Border a_jcomponent_set_border | set_border @public -> <void> {
+  Cx Comp Border ^a_jcomponent_impl_set_border call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <void result_sender> *Ret <a_jcomponent_h> *Comp <bool> *Sw a_jcomponent_impl_set_opaque -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_jcomponent_h> *Comp <color> *Color a_jcomponent_impl_set_background -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_jcomponent_h> *Comp <a_border_h> *Border a_jcomponent_impl_set_border -> <void> @native ;;
+
+
+# -- abstract window : java.awt.Window --
+
+data <a_window_h> @opaque := @native ;;
+
+data <window_location> @public :=
+| <int> <int> in_screen$
+| center_of_screen$
+| <a_component_h> relative_to_component$
+| platform_default_location$ ;;
+
+eval <swing_obj> *Obj a_window_h @public -> <a_window_h maybe> {
+  Obj case {
+  ; *Frame_h frame_obj$ -> (Frame_h as_window) value$
+  ; *Dialog_h dialog_obj$ -> (Dialog_h as_window) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <a_window_h> *Window a_window_instance | instance @public -> <swing_obj> @native ;;
+
+eval <a_window_h> *Window a_window_as_component | as_component @public -> <a_component_h> @native ;;
+
+eval <context_h> *Cx <a_window_h> *Window <listener_h> *Lis a_window_add_window_listener | add_window_listener @public -> <void> {
+  Cx Window Lis ^a_window_impl_install_window_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_window_h> *Window <listener_h> *Lis a_window_remove_window_listener | remove_window_listener @public -> <void> {
+  Cx Window Lis ^a_window_impl_uninstall_window_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_window_h> *Window a_window_pack | pack @public -> <void> {
+  Cx Window ^a_window_impl_pack call_impl_1_void
+} ;;
+
+eval <context_h> *Cx <a_window_h> *Window <bool> *Sw a_window_set_visible | set_visible @public -> <void> {
+  Cx Window Sw ^a_window_impl_set_visible call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_window_h> *Window a_window_dispose | dispose @public -> <void> {
+  Cx Window ^a_window_impl_dispose call_impl_1_void
+} ;;
+
+eval <context_h> *Cx <a_window_h> *Window <window_location> *Loc a_window_set_location | set_location @public -> <void> {
+  Cx Window Loc ^a_window_impl_set_location call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <void result_sender> *Ret <a_window_h> *Window <listener_h> *Lis a_window_impl_install_window_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_window_h> *Window <listener_h> *Lis a_window_impl_uninstall_window_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_window_h> *Window a_window_impl_pack -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_window_h> *Window <bool> *Sw a_window_impl_set_visible -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_window_h> *Window a_window_impl_dispose -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_window_h> *Window <window_location> *Loc a_window_impl_set_location -> <void> @native ;;
+
+
+# -- frame : javax.swing.JFrame --
+
+data <frame_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj frame_h @public -> <frame_h maybe> {
+  Obj case {
+  ; *Frame_h frame_obj$ -> Frame_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <frame_h> *Frame frame_as_component | as_component @public -> <a_component_h> @native ;;
+eval <frame_h> *Frame frame_as_window | as_window @public -> <a_window_h> @native ;;
+
+data <frame_close_operation> @public :=
+| do_nothing_on_frame_close$
+| hide_on_frame_close$
+| dispose_on_frame_close$
+| exit_on_frame_close$ ;;
+
+eval <context_h> *Cx <cstr> *Title create_frame @public -> <frame_h> {
+  Cx Title create_frame_impl
+} ;;
+
+eval <context_h> *Cx <frame_h> *Frame <frame_close_operation> *Op frame_set_default_close_operation | set_default_close_operation @public -> <void> {
+  Cx Frame Op ^frame_impl_set_default_close_operation call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <frame_h> *Frame frame_get_content_pane | get_content_pane @public -> <a_panel_h> {
+  Cx Frame ^frame_impl_get_content_pane call_impl_1_a_panel_h
+} ;;
+
+eval <context_h> *Cx <frame_h> *Frame <cstr> *Title frame_set_title | set_title @public -> <void> {
+  Cx Frame Title ^frame_impl_set_title call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <frame_h> *Frame <menu_bar_h> *Menu_bar frame_set_menu_bar | set_menu_bar @public -> <void> {
+  Cx Frame Menu_bar ^frame_impl_set_menu_bar call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <frame_h> *Frame <bool> *Sw frame_set_visible | set_visible @public -> <void> {
+  Cx (Frame as_window) Sw set_visible
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <cstr> *Title create_frame_impl -> <frame_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <frame_h> *Frame <frame_close_operation> *Op frame_impl_set_default_close_operation -> <void> @native ;;
+eval <context_h> *Cx <a_panel_h result_sender> *Ret <frame_h> *Frame frame_impl_get_content_pane -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <frame_h> *Frame <cstr> *Title frame_impl_set_title -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <frame_h> *Frame <menu_bar_h> *Menu_bar frame_impl_set_menu_bar -> <void> @native ;;
+
+
+# -- dialog : javax.swing.JDialog --
+
+data <dialog_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj dialog_h @public -> <dialog_h maybe> {
+  Obj case {
+  ; *Dialog_h dialog_obj$ -> Dialog_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <dialog_h> *Dialog dialog_as_component | as_component @public -> <a_component_h> @native ;;
+eval <dialog_h> *Dialog dialog_as_window | as_window @public -> <a_window_h> @native ;;
+
+data <modality> @public :=
+| application_modal$
+| document_modal$
+| modeless$ ;;
+
+data <dialog_close_operation> @public :=
+| do_nothing_on_dialog_close$
+| hide_on_dialog_close$
+| dispose_on_dialog_close$ ;;
+
+eval <context_h> *Cx <a_window_h> *Owner <cstr> *Title <modality> *Modality create_dialog @public -> <dialog_h> {
+  Cx Owner Title Modality create_dialog_impl
+} ;;
+
+eval <context_h> *Cx <dialog_h> *Dialog <dialog_close_operation> *Op dialog_set_default_close_operation | set_default_close_operation @public -> <void> {
+  Cx Dialog Op ^dialog_impl_set_default_close_operation call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <dialog_h> *Dialog dialog_get_content_pane | get_content_pane @public -> <a_panel_h> {
+  Cx Dialog ^dialog_impl_get_content_pane call_impl_1_a_panel_h
+} ;;
+
+eval <context_h> *Cx <dialog_h> *Dialog <bool> *Sw dialog_set_visible | set_visible @public -> <void> {
+  Cx (Dialog as_window) Sw set_visible
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <a_window_h> *Owner <cstr> *Title <modality> *Modality create_dialog_impl -> <dialog_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <dialog_h> *Dialog <dialog_close_operation> *Op dialog_impl_set_default_close_operation -> <void> @native ;;
+eval <context_h> *Cx <a_panel_h result_sender> *Ret <dialog_h> *Dialog dialog_impl_get_content_pane -> <void> @native ;;
+
+
+# -- menu bar : javax.swing.JMenuBar --
+
+data <menu_bar_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj menu_bar_h @public -> <menu_bar_h maybe> {
+  Obj case {
+  ; *Menu_bar_h menu_bar_obj$ -> Menu_bar_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <context_h> *Cx create_menu_bar @public -> <menu_bar_h> {
+  Cx create_menu_bar_impl
+} ;;
+
+eval <context_h> *Cx <menu_bar_h> *Menu_bar <menu_h> *Menu menu_bar_add_menu | add_menu @public -> <void> {
+  Cx Menu_bar Menu ^menu_bar_impl_add_menu call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_menu_bar_impl -> <menu_bar_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <menu_bar_h> *Menu_bar <menu_h> *Menu menu_bar_impl_add_menu -> <void> @native ;;
+
+
+# -- menu : javax.swing.JMenu --
+
+data <menu_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj menu_h @public -> <menu_h maybe> {
+  Obj case {
+  ; *Menu_h menu_obj$ -> Menu_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <context_h> *Cx <cstr> *Text create_menu @public -> <menu_h> {
+  Cx Text create_menu_impl
+} ;;
+
+eval <context_h> *Cx <menu_h> *Menu <menu_item_h> *Menu_item menu_add_menu_item | add_menu_item @public -> <void> {
+  Cx Menu Menu_item ^menu_impl_add_menu_item call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <menu_h> *Menu <menu_h> *Submenu menu_add_menu | add_menu @public -> <void> {
+  Cx Menu Submenu ^menu_impl_add_menu call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <cstr> *Text create_menu_impl -> <menu_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <menu_h> *Menu <menu_item_h> *Menu_item menu_impl_add_menu_item -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <menu_h> *Menu <menu_h> *Submenu menu_impl_add_menu -> <void> @native ;;
+
+
+# -- popup menu : javax.swing.JPopupMenu --
+
+data <popup_menu_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj popup_menu_h @public -> <popup_menu_h maybe> {
+  Obj case {
+  ; *Popup_menu_h popup_menu_obj$ -> Popup_menu_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <context_h> *Cx create_popup_menu @public -> <popup_menu_h> {
+  Cx create_popup_menu_impl
+} ;;
+
+eval <context_h> *Cx <popup_menu_h> *Menu <menu_item_h> *Menu_item popup_menu_add_menu_item | add_menu_item @public -> <void> {
+  Cx Menu Menu_item ^popup_menu_impl_add_menu_item call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <popup_menu_h> *Menu <menu_h> *Submenu popup_menu_add_menu | add_menu @public -> <void> {
+  Cx Menu Submenu ^popup_menu_impl_add_menu call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <popup_menu_h> *Menu <bool> *Sw popup_menu_set_visible | set_visible @public -> <void> {
+  Cx Menu Sw ^popup_menu_impl_set_visible call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_popup_menu_impl -> <popup_menu_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <popup_menu_h> *Menu <menu_item_h> *Menu_item popup_menu_impl_add_menu_item -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <popup_menu_h> *Menu <menu_h> *Submenu popup_menu_impl_add_menu -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <popup_menu_h> *Menu <bool> *Sw popup_menu_impl_set_visible -> <void> @native ;;
+
+
+# -- menu item : javax.swing.JMenuItem --
+
+data <menu_item_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj menu_item_h @public -> <menu_item_h maybe> {
+  Obj case {
+  ; *Menu_item_h menu_item_obj$ -> Menu_item_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <menu_item_h> *Menu_item menu_item_as_component | as_component @public -> <a_component_h> @native ;;
+eval <menu_item_h> *Menu_item menu_item_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+eval <menu_item_h> *Menu_item menu_item_as_abutton | as_abutton @public -> <a_abutton_h> @native ;;
+
+eval <context_h> *Cx <cstr> *Text create_menu_item @public -> <menu_item_h> {
+  Cx Text create_menu_item_impl
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <cstr> *Text create_menu_item_impl -> <menu_item_h> @native ;;
+
+
+# -- abstract panel : javax.swing.JPanel --
+
+data <a_panel_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj a_panel_h @public -> <a_panel_h maybe> {
+  Obj case {
+  ; *Border_layout_panel_h border_layout_panel_obj$ -> (Border_layout_panel_h as_panel) value$
+  ; *Grid_layout_panel_h grid_layout_panel_obj$ -> (Grid_layout_panel_h as_panel) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <a_panel_h> *Panel a_panel_instance | instance @public -> <swing_obj> @native ;;
+
+eval <a_panel_h> *Panel a_panel_as_component | as_component @public -> <a_component_h> @native ;;
+eval <a_panel_h> *Panel a_panel_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+
+eval <context_h> *Cx <a_panel_h> *Panel <a_component_h> *Comp a_panel_add_component | add_component @public -> <void> {
+  Cx Panel Comp ^a_panel_impl_add_component call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <void result_sender> *Ret <a_panel_h> *Panel <a_component_h> *Comp a_panel_impl_add_component -> <void> @native ;;
+
+
+# -- border layout panel : javax.swing.JPanel with BorderLayout --
+
+data <border_layout_panel_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj border_layout_panel_h @public -> <border_layout_panel_h maybe> {
+  Obj case {
+  ; *Border_layout_panel_h border_layout_panel_obj$ -> Border_layout_panel_h value$
+  ; ** -> none$
+  }
+} ;;
+
+data <border_layout_position> @public :=
+| border_layout_center$
+| border_layout_north$
+| border_layout_south$
+| border_layout_east$
+| border_layout_west$ ;;
+
+eval <border_layout_panel_h> *Panel border_layout_panel_as_component | as_component @public -> <a_component_h> @native ;;
+eval <border_layout_panel_h> *Panel border_layout_panel_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+eval <border_layout_panel_h> *Panel border_layout_panel_as_panel | as_panel @public -> <a_panel_h> @native ;;
+
+eval <context_h> *Cx create_border_layout_panel @public -> <border_layout_panel_h> {
+  Cx create_border_layout_panel_impl
+} ;;
+
+eval <context_h> *Cx <border_layout_panel_h> *Panel <a_component_h> *Comp <border_layout_position> *Pos border_layout_panel_add_component | add_component @public -> <void> {
+  Cx Panel Comp Pos ^border_layout_panel_impl_add_component call_impl_3_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_border_layout_panel_impl -> <border_layout_panel_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <border_layout_panel_h> *Panel <a_component_h> *Comp <border_layout_position> *Pos border_layout_panel_impl_add_component -> <void> @native ;;
+
+
+# -- grid layout panel : javax.swing.JPanel with GridLayout --
+
+data <grid_layout_panel_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj grid_layout_panel_h @public -> <grid_layout_panel_h maybe> {
+  Obj case {
+  ; *Grid_layout_panel_h grid_layout_panel_obj$ -> Grid_layout_panel_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <grid_layout_panel_h> *Panel grid_layout_panel_as_component | as_component @public -> <a_component_h> @native ;;
+eval <grid_layout_panel_h> *Panel grid_layout_panel_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+eval <grid_layout_panel_h> *Panel grid_layout_panel_as_panel | as_panel @public -> <a_panel_h> @native ;;
+
+eval <context_h> *Cx <int> *Rows <int> *Columns create_grid_layout_panel @public -> <grid_layout_panel_h> {
+  Cx Rows Columns create_grid_layout_panel_impl
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <int> *Rows <int> *Columns create_grid_layout_panel_impl -> <grid_layout_panel_h> @native ;;
+
+
+# -- scroll pane : javax.swing.JScrollPane --
+
+data <scroll_pane_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj scroll_pane_h @public -> <scroll_pane_h maybe> {
+  Obj case {
+  ; *Scroll_pane_h scroll_pane_obj$ -> Scroll_pane_h value$
+  ; ** -> none$
+  }
+} ;;
+
+data <scroll_bar_policy> @public :=
+| scroll_bar_never$
+| scroll_bar_as_needed$
+| scroll_bar_always$ ;;
+
+eval <scroll_pane_h> *Pane scroll_pane_as_component | as_component @public -> <a_component_h> @native ;;
+eval <scroll_pane_h> *Pane scroll_pane_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+
+eval <context_h> *Cx create_scroll_pane @public -> <scroll_pane_h> {
+  Cx create_scroll_pane_impl
+} ;;
+
+eval <context_h> *Cx <scroll_pane_h> *Panel <a_component_h> *Comp scroll_pane_add_component | add_component @public -> <void> {
+  Cx Panel Comp ^scroll_pane_impl_add_component call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <scroll_pane_h> *Panel <scroll_bar_policy> *Pol scroll_pane_set_horizontal_scroll_bar_policy | set_horizontal_scroll_bar_policy @public -> <void> {
+  Cx Panel Pol ^scroll_pane_impl_set_horizontal_scroll_bar_policy call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <scroll_pane_h> *Panel <scroll_bar_policy> *Pol scroll_pane_set_vertical_scroll_bar_policy | set_vertical_scroll_bar_policy @public -> <void> {
+  Cx Panel Pol ^scroll_pane_impl_set_vertical_scroll_bar_policy call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_scroll_pane_impl -> <scroll_pane_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <scroll_pane_h> *Pane <a_component_h> *Comp scroll_pane_impl_add_component -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <scroll_pane_h> *Pane <scroll_bar_policy> *Pol scroll_pane_impl_set_horizontal_scroll_bar_policy -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <scroll_pane_h> *Pane <scroll_bar_policy> *Pol scroll_pane_impl_set_vertical_scroll_bar_policy -> <void> @native ;;
+
+
+# -- option pane : javax.swing.JOptionPane --
+
+data <message_type> @public :=
+| information_message$
+| warning_message$
+| error_message$
+| question_message$
+| plain_message$ ;;
+
+data <confirm_option> @public :=
+| yes_no_option$
+| yes_no_cancel_option$ ;;
+
+data <confirmed> @public :=
+| confirmed_yes$
+| confirmed_no$
+| confirmed_cancel$ ;;
+
+eval <context_h> *Cx <a_component_h> *Owner <cstr> *Title <message_type> *Msg_type <a_component_h> *Msg show_message_dialog @public -> <void> {
+  Cx Owner Title Msg_type Msg ^show_message_dialog_impl call_impl_4_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Owner <cstr> *Title <message_type> *Msg_type <cstr> *Msg show_message_dialog_with_text | show_message_dialog @public -> <void> {
+  Cx Owner Title Msg_type (Cx Msg create_label >> as_component) show_message_dialog
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Owner <cstr> *Title <message_type> *Msg_type <a_component_h> *Msg <confirm_option> *Opt_type show_confirm_dialog @public -> <confirmed> {
+  Cx Owner Title Msg_type Msg Opt_type ^show_confirm_dialog_impl call_impl_5_confirmed
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Owner <cstr> *Title <message_type> *Msg_type <cstr> *Msg <confirm_option> *Opt_type show_confirm_dialog_with_text | show_confirm_dialog @public -> <confirmed> {
+  Cx Owner Title Msg_type (Cx Msg create_label >> as_component) Opt_type show_confirm_dialog
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Owner <cstr> *Title <message_type> *Msg_type <a_component_h> *Msg show_message_dialog_impl -> <void> @native ;;
+eval <context_h> *Cx <confirmed result_sender> *Ret <a_component_h> *Owner <cstr> *Title <message_type> *Msg_type <a_component_h> *Msg <confirm_option> *Opt_type show_confirm_dialog_impl -> <void> @native ;;
+
+
+# -- abstract border : javax.swing.border.Border --
+
+data <a_border_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj a_border_h @public -> <a_border_h maybe> {
+  Obj case {
+  ; *Empty_border_h empty_border_obj$ -> (Empty_border_h as_border) value$
+  ; *Etched_border_h etched_border_obj$ -> (Etched_border_h as_border) value$
+  ; *Titled_border_h titled_border_obj$ -> (Titled_border_h as_border) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <a_border_h> *Border a_border_instance | instance @public -> <swing_obj> @native ;;
+
+
+# -- empty border : javax.swing.border.EmptyBorder --
+
+data <empty_border_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj empty_border_h @public -> <empty_border_h maybe> {
+  Obj case {
+  ; *Empty_border_h empty_border_obj$ -> Empty_border_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <empty_border_h> *Border empty_border_as_border | as_border @public -> <a_border_h> @native ;;
+
+eval <context_h> *Cx <insets> *Insets create_empty_border @public -> <empty_border_h> {
+  Cx Insets create_empty_border_impl
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <insets> *Insets create_empty_border_impl -> <empty_border_h> @native ;;
+
+
+# -- etched border : javax.swing.border.EtchedBorder --
+
+data <etched_border_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj etched_border_h @public -> <etched_border_h maybe> {
+  Obj case {
+  ; *Etched_border_h etched_border_obj$ -> Etched_border_h value$
+  ; ** -> none$
+  }
+} ;;
+
+data <etch_type> @public :=
+| raised_etch$
+| lowered_etch$ ;;
+
+eval <etched_border_h> *Border etched_border_as_border | as_border @public -> <a_border_h> @native ;;
+
+eval <context_h> *Cx <etch_type> *Etch_type create_etched_border @public -> <etched_border_h> {
+  Cx Etch_type create_etched_border_impl
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <etch_type> *Etch_type create_etched_border_impl -> <etched_border_h> @native ;;
+
+
+# -- titled border : javax.swing.border.TitledBorder --
+
+data <titled_border_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj titled_border_h @public -> <titled_border_h maybe> {
+  Obj case {
+  ; *Titled_border_h titled_border_obj$ -> Titled_border_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <titled_border_h> *Border titled_border_as_border | as_border @public -> <a_border_h> @native ;;
+
+eval <context_h> *Cx <a_border_h> *Border <cstr> *Title create_titled_border @public -> <titled_border_h> {
+  Cx Border Title create_titled_border_impl
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <a_border_h> *Border <cstr> *Title create_titled_border_impl -> <titled_border_h> @native ;;
+
+
+# -- abstract button : javax.swing.AbstractButton --
+
+data <a_abutton_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj a_abutton_h @public -> <a_abutton_h maybe> {
+  Obj case {
+  ; *Menu_item_h menu_item_obj$ -> (Menu_item_h as_abutton) value$
+  ; *Button_h button_obj$ -> (Button_h as_abutton) value$
+  ; *Check_box_h check_box_obj$ -> (Check_box_h as_abutton) value$
+  ; *Radio_button_h radio_button_obj$ -> (Radio_button_h as_abutton) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <a_abutton_h> *Button a_abutton_instance | instance @public -> <swing_obj> @native ;;
+
+eval <a_abutton_h> *Button a_abutton_as_component | as_component @public -> <a_component_h> @native ;;
+eval <a_abutton_h> *Button a_abutton_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+
+eval <context_h> *Cx <a_abutton_h> *Button <listener_h> *Lis a_abutton_add_action_listener | add_action_listener @public -> <void> {
+  Cx Button Lis ^a_abutton_impl_install_action_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_abutton_h> *Button <listener_h> *Lis a_abutton_remove_action_listener | remove_action_listener @public -> <void> {
+  Cx Button Lis ^a_abutton_impl_uninstall_action_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_abutton_h> *Button <cstr> *Command a_abutton_set_action_command | set_action_command @public -> <void> {
+  Cx Button Command ^a_abutton_impl_set_action_command call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_abutton_h> *Button a_abutton_get_text | get_text @public -> <cstr> {
+  Cx Button ^a_abutton_impl_get_text call_impl_1_cstr
+} ;;
+
+eval <context_h> *Cx <a_abutton_h> *Button <cstr> *Text a_abutton_set_text | set_text @public -> <void> {
+  Cx Button Text ^a_abutton_impl_set_text call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_abutton_h> *Button a_abutton_selected? | selected? @public -> <bool> {
+  Cx Button ^a_abutton_impl_selected? call_impl_1_bool
+} ;;
+
+eval <context_h> *Cx <a_abutton_h> *Button <bool> *Sw a_abutton_set_selected | set_selected @public -> <void> {
+  Cx Button Sw ^a_abutton_impl_set_selected call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <void result_sender> *Ret <a_abutton_h> *Button <listener_h> *Lis a_abutton_impl_install_action_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_abutton_h> *Button <listener_h> *Lis a_abutton_impl_uninstall_action_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_abutton_h> *Button <cstr> *Command a_abutton_impl_set_action_command -> <void> @native ;;
+eval <context_h> *Cx <cstr result_sender> *Ret <a_abutton_h> *Button a_abutton_impl_get_text -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_abutton_h> *Button <cstr> *Text a_abutton_impl_set_text -> <void> @native ;;
+eval <context_h> *Cx <bool result_sender> *Ret <a_abutton_h> *Button a_abutton_impl_selected? -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_abutton_h> *Button <bool> *Sw a_abutton_impl_set_selected -> <void> @native ;;
+
+
+# -- button : javax.swing.JButton --
+
+data <button_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj button_h @public -> <button_h maybe> {
+  Obj case {
+  ; *Button_h button_obj$ -> Button_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <button_h> *Button button_as_component | as_component @public -> <a_component_h> @native ;;
+eval <button_h> *Button button_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+eval <button_h> *Button button_as_abutton | as_abutton @public -> <a_abutton_h> @native ;;
+
+eval <context_h> *Cx create_button @public -> <button_h> {
+  Cx create_button_impl
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_button_impl -> <button_h> @native ;;
+
+
+#  -- check box : javax.swing.JCheckBox --
+
+data <check_box_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj check_box_h @public -> <check_box_h maybe> {
+  Obj case {
+  ; *Check_box_h check_box_obj$ -> Check_box_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <check_box_h> *Check_box check_box_as_component | as_component @public -> <a_component_h> @native ;;
+eval <check_box_h> *Check_box check_box_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+eval <check_box_h> *Check_box check_box_as_abutton | as_abutton @public -> <a_abutton_h> @native ;;
+
+eval <context_h> *Cx create_check_box @public -> <check_box_h> {
+  Cx create_check_box_impl
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_check_box_impl -> <check_box_h> @native ;;
+
+
+# -- radio button : javax.swing.JRadioButton --
+
+data <radio_button_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj radio_button_h @public -> <radio_button_h maybe> {
+  Obj case {
+  ; *Radio_button_h radio_button_obj$ -> Radio_button_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <radio_button_h> *Radio_button radio_button_as_component | as_component @public -> <a_component_h> @native ;;
+eval <radio_button_h> *Radio_button radio_button_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+eval <radio_button_h> *Radio_button radio_button_as_abutton | as_abutton @public -> <a_abutton_h> @native ;;
+
+eval <context_h> *Cx create_radio_button @public -> <radio_button_h> {
+  Cx create_radio_button_impl
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_radio_button_impl -> <radio_button_h> @native ;;
+
+
+# -- button group : javax.swing.ButtonGroup --
+
+data <button_group_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj button_group_h @public -> <button_group_h maybe> {
+  Obj case {
+  ; *Button_group_h button_group_obj$ -> Button_group_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <context_h> *Cx create_button_group @public -> <button_group_h> {
+  Cx create_button_group_impl
+} ;;
+
+eval <context_h> *Cx <button_group_h> *Button_group <radio_button_h> *Radio_button button_group_add_button | add_button @public -> <void> {
+  Cx Button_group Radio_button ^button_group_impl_add_button call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_button_group_impl -> <button_group_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <button_group_h> *Button_group <radio_button_h> *Radio_button button_group_impl_add_button -> <void> @native ;;
+
+
+# -- label : javax.swing.JLabel --
+
+data <label_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj label_h @public -> <label_h maybe> {
+  Obj case {
+  ; *Label_h label_obj$ -> Label_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <label_h> *Label label_as_component | as_component @public -> <a_component_h> @native ;;
+eval <label_h> *Label label_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+
+eval <context_h> *Cx <cstr> *Text create_label @public -> <label_h> {
+  Cx Text create_label_impl
+} ;;
+
+eval <context_h> *Cx <label_h> *Label label_get_text | get_text @public -> <cstr> {
+  Cx Label ^label_impl_get_text call_impl_1_cstr
+} ;;
+
+eval <context_h> *Cx <label_h> *Label <cstr> *Text label_set_text | set_text @public -> <void> {
+  Cx Label Text ^label_impl_set_text call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <label_h> *Label <horizontal_alignment> *Align label_set_horizontal_alignment | set_horizontal_alignment @public -> <void> {
+  Cx Label Align ^label_impl_set_horizontal_alignment call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <label_h> *Label <vertical_alignment> *Align label_set_vertical_alignment | set_vertical_alignment @public -> <void> {
+  Cx Label Align ^label_impl_set_vertical_alignment call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <cstr> *Text create_label_impl -> <label_h> @native ;;
+eval <context_h> *Cx <cstr result_sender> *Ret <label_h> *Label label_impl_get_text -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <label_h> *Label <cstr> *Text label_impl_set_text -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <label_h> *Label <horizontal_alignment> *Align label_impl_set_horizontal_alignment -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <label_h> *Label <vertical_alignment> *Align label_impl_set_vertical_alignment -> <void> @native ;;
+
+
+# -- image : java.awt.Image --
+
+data <image_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj image_h @public -> <image_h maybe> {
+  Obj case {
+  ; *Image_h image_obj$ -> Image_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <context_h> *Cx <cstr> *File_path create_image_from_file @public -> <image_h> {
+  Cx File_path create_image_impl_from_file
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <cstr> *File_path create_image_impl_from_file -> <image_h> @native ;;
+
+
+# -- icon : javax.swing.Icon --
+
+data <icon_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj icon_h @public -> <icon_h maybe> {
+  Obj case {
+  ; *Icon_h icon_obj$ -> Icon_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <context_h> *Cx <image_h> *Image create_icon @public -> <icon_h> {
+  Cx Image create_icon_impl
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <image_h> *Image create_icon_impl -> <icon_h> @native ;;
+
+
+# -- canvas : javax.swing.JPanel --
+
+data <canvas_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj canvas_h @public -> <canvas_h maybe> {
+  Obj case {
+  ; *Canvas_h canvas_obj$ -> Canvas_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <canvas_h> *Canvas canvas_as_component | as_component @public -> <a_component_h> @native ;;
+eval <canvas_h> *Canvas canvas_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+
+data <paint_action> @public :=
+| <color> pa_set_color$
+| <font> pa_set_font$
+| <point> <point> pa_draw_line$
+| <point list> pa_draw_polyline$
+| <point> <dimension> pa_draw_rect$
+| <point> <dimension> pa_fill_rect$
+| <point list> pa_draw_polygon$
+| <point list> pa_fill_polygon$
+| <point> <dimension> pa_draw_oval$
+| <point> <dimension> pa_fill_oval$
+| <point> <dimension> <int> <int> pa_draw_arc$
+| <point> <dimension> <int> <int> pa_fill_arc$
+| <image_h> <point> <dimension maybe> <color maybe> pa_draw_image$
+| <cstr> <point> pa_draw_string$
+| <cstr> <point> <int> <horizontal_alignment> pa_draw_string2$
+| <cstr> <point> <dimension> <horizontal_alignment> <vertical_alignment> pa_draw_string3$ ;;
+
+eval <context_h> *Cx create_canvas @public -> <canvas_h> {
+  Cx create_canvas_impl
+} ;;
+
+eval <context_h> *Cx <canvas_h> *Canvas <paint_action list> *Paint_actions canvas_set_paint_actions | set_paint_actions @public -> <void> {
+  Cx Canvas Paint_actions ^canvas_impl_set_paint_actions call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_canvas_impl -> <canvas_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <canvas_h> *Canvas <paint_action list> *Paint_actions canvas_impl_set_paint_actions -> <void> @native ;;
+
+
+# -- abstract text component : javax.swing.JTextComponent --
+
+data <a_text_component_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj a_text_component_h @public -> <a_text_component_h maybe> {
+  Obj case {
+  ; *Text_field_h text_field_obj$ -> (Text_field_h as_text_component) value$
+  ; *Text_area_h text_area_obj$ -> (Text_area_h as_text_component) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <a_text_component_h> *Text_comp a_text_component_instance | instance @public -> <swing_obj> @native ;;
+
+eval <a_text_component_h> *Text_comp a_text_component_as_component | as_component @public -> <a_component_h> @native ;;
+eval <a_text_component_h> *Text_comp a_text_component_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+
+eval <context_h> *Cx <a_text_component_h> *Text_comp a_text_component_get_document | get_document @public -> <a_document_h> {
+  Cx Text_comp ^a_text_component_impl_get_document call_impl_1_a_document_h
+} ;;
+
+eval <context_h> *Cx <a_text_component_h> *Text_comp <a_document_h> *Doc a_text_component_set_document | set_document @public -> <void> {
+  Cx Text_comp Doc ^a_text_component_impl_set_document call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_text_component_h> *Text_comp a_text_component_get_text | get_text @public -> <cstr> {
+  Cx Text_comp ^a_text_component_impl_get_text call_impl_1_cstr
+} ;;
+
+eval <context_h> *Cx <a_text_component_h> *Text_comp <cstr> *Text a_text_component_set_text | set_text @public -> <void> {
+  Cx Text_comp Text ^a_text_component_impl_set_text call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <a_document_h result_sender> *Ret <a_text_component_h> *Text_comp a_text_component_impl_get_document -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_text_component_h> *Text_comp <a_document_h> *Doc a_text_component_impl_set_document -> <void> @native ;;
+eval <context_h> *Cx <cstr result_sender> *Ret <a_text_component_h> *Text_comp a_text_component_impl_get_text -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_text_component_h> *Text_comp <cstr> *Text a_text_component_impl_set_text -> <void> @native ;;
+
+
+# -- text field : javax.swing.JTextField --
+
+data <text_field_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj text_field_h @public -> <text_field_h maybe> {
+  Obj case {
+  ; *Text_field_h text_field_obj$ -> Text_field_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <text_field_h> *Text_field text_field_as_component | as_component @public -> <a_component_h> @native ;;
+eval <text_field_h> *Text_field text_field_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+eval <text_field_h> *Text_field text_field_as_text_component | as_text_component @public -> <a_text_component_h> @native ;;
+
+eval <context_h> *Cx create_text_field_with_plain_document | create_text_field @public -> <text_field_h> {
+  Cx (Cx create_plain_document >> as_document) create_text_field
+} ;;
+
+eval <context_h> *Cx <a_document_h> *Doc create_text_field @public -> <text_field_h> {
+  Cx Doc create_text_field_impl
+} ;;
+
+eval <context_h> *Cx <text_field_h> *Text_field <listener_h> *Lis text_field_add_action_listener | add_action_listener @public -> <void> {
+  Cx Text_field Lis ^text_field_impl_install_action_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <text_field_h> *Text_field <listener_h> *Lis text_field_remove_action_listener | remove_action_listener @public -> <void> {
+  Cx Text_field Lis ^text_field_impl_uninstall_action_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <text_field_h> *Text_field <cstr> *Command text_field_set_action_command | set_action_command @public -> <void> {
+  Cx Text_field Command ^text_field_impl_set_action_command call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <text_field_h> *Text_field <int> *Columns text_field_set_columns | set_columns @public -> <void> {
+  Cx Text_field Columns ^text_field_impl_set_columns call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <a_document_h> *Doc create_text_field_impl -> <text_field_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <text_field_h> *Text_field <listener_h> *Lis text_field_impl_install_action_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <text_field_h> *Text_field <listener_h> *Lis text_field_impl_uninstall_action_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <text_field_h> *Text_field <cstr> *Command text_field_impl_set_action_command -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <text_field_h> *Text_field <int> *Columns text_field_impl_set_columns -> <void> @native ;;
+
+
+# -- text area : javax.swing.JTextArea --
+
+data <text_area_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj text_area_h @public -> <text_area_h maybe> {
+  Obj case {
+  ; *Text_area_h text_area_obj$ -> Text_area_h value$
+  ; ** -> none$
+  }
+} ;;
+
+data <line_wrap_policy> @public :=
+| no_wrap$
+| char_wrap$
+| word_wrap$ ;;
+
+eval <text_area_h> *Text_Area text_area_as_component | as_component @public -> <a_component_h> @native ;;
+eval <text_area_h> *Text_Area text_area_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+eval <text_area_h> *Text_area text_area_as_text_component | as_text_component @public -> <a_text_component_h> @native ;;
+
+eval <context_h> *Cx create_text_area_with_plain_document | create_text_area @public -> <text_area_h> {
+  Cx (Cx create_plain_document >> as_document) create_text_area
+} ;;
+
+eval <context_h> *Cx <a_document_h> *Doc create_text_area @public -> <text_area_h> {
+  Cx Doc create_text_area_impl
+} ;;
+
+eval <context_h> *Cx <text_area_h> *Text_area <int> *Columns text_area_set_columns | set_columns @public -> <void> {
+  Cx Text_area Columns ^text_area_impl_set_columns call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <text_area_h> *Text_area <int> *Rows text_area_set_rows | set_rows @public -> <void> {
+  Cx Text_area Rows ^text_area_impl_set_rows call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <text_area_h> *Text_area <line_wrap_policy> *Line_wrap text_area_set_line_wrap | set_line_wrap @public -> <void> {
+  Cx Text_area Line_wrap ^text_area_impl_set_line_wrap call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <text_area_h> *Text_area text_area_get_document | get_document @public -> <a_document_h> {
+  Cx Text_area ^text_area_impl_get_document call_impl_1_a_document_h
+} ;;
+
+eval <context_h> *Cx <text_area_h> *Text_area <a_document_h> *Doc text_area_set_document | set_document @public -> <void> {
+  Cx Text_area Doc ^text_area_impl_set_document call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <text_area_h> *Text_area <cstr> *Text text_area_append | append @public -> <void> {
+  Cx Text_area Text ^text_area_impl_append call_impl_2_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <a_document_h> *Doc create_text_area_impl -> <text_area_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <text_area_h> *Text_area <int> *Columns text_area_impl_set_columns -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <text_area_h> *Text_area <int> *Rows text_area_impl_set_rows -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <text_area_h> *Text_area <line_wrap_policy> *Line_wrap text_area_impl_set_line_wrap -> <void> @native ;;
+eval <context_h> *Cx <a_document_h result_sender> *Ret <text_area_h> *Text_area text_area_impl_get_document -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <text_area_h> *Text_area <a_document_h> *Doc text_area_impl_set_document -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <text_area_h> *Text_area <cstr> *Text text_area_impl_append -> <void> @native ;;
+
+
+# -- abstract document : javax.swing.text.Document --
+
+data <a_document_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj a_document_h @public -> <a_document_h maybe> {
+  Obj case {
+  ; *Plain_document_h plain_document_obj$ -> (Plain_document_h as_document) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <a_document_h> *Doc a_document_instance | instance @public -> <swing_obj> @native ;;
+
+eval <context_h> *Cx <a_document_h> *Doc <listener_h> *Lis document_add_document_listener | add_document_listener @public -> <void> {
+  Cx Doc Lis ^a_document_impl_install_document_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_document_h> *Doc <listener_h> *Lis document_remove_document_listener | remove_document_listener @public -> <void> {
+  Cx Doc Lis ^a_document_impl_uninstall_document_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_document_h> *Doc a_document_get_length | get_length @public -> <int> {
+  Cx Doc ^a_document_impl_get_length call_impl_1_int
+} ;;
+
+eval <context_h> *Cx <a_document_h> *Doc <int> *Ofst <int> *Len a_document_get_text | get_text @public -> <cstr> {
+  Cx Doc Ofst Len ^a_document_impl_get_text call_impl_3_cstr
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <void result_sender> *Ret <a_document_h> *Doc <listener_h> *Lis a_document_impl_install_document_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_document_h> *Doc <listener_h> *Lis a_document_impl_uninstall_document_listener -> <void> @native ;;
+eval <context_h> *Cx <int result_sender> *Ret <a_document_h> *Doc a_document_impl_get_length -> <void> @native ;;
+eval <context_h> *Cx <cstr result_sender> *Ret <a_document_h> *Doc <int> *Ofst <int> *Len a_document_impl_get_text -> <void> @native ;;
+
+
+# -- plain document : javax.swing.text.PlainDocument --
+
+data <plain_document_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj plain_document_h @public -> <plain_document_h maybe> {
+  Obj case {
+  ; *Plain_document_h plain_document_obj$ -> Plain_document_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <plain_document_h> *Doc plain_document_as_document | as_document @public -> <a_document_h> @native ;;
+
+eval <context_h> *Cx create_plain_document @public -> <plain_document_h> {
+  Cx create_plain_document_impl
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_plain_document_impl -> <plain_document_h> @native ;;
+
+
+# -- cursor : java.awt.Cursor --
+
+data <cursor_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj cursor_h @public -> <cursor_h maybe> {
+  Obj case {
+  ; *Cursor_h cursor_obj$ -> Cursor_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <context_h> *Cx <cstr> *Name get_cursor @public -> <cursor_h> {
+  Cx Name ^get_cursor_impl call_impl_1_cursor_h
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <cursor_h result_sender> *Ret <cstr> *Name get_cursor_impl -> <void> @native ;;
+
+
+# -- timer : javax.swing.Timer --
+
+data <timer_h> @opaque := @native ;;
+
+eval <swing_obj> *Obj timer_h @public -> <timer_h maybe> {
+  Obj case {
+  ; *Timer_h timer_obj$ -> Timer_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <context_h> *Cx <int> *Delay <int maybe> *Repeat_interval_ create_timer @public -> <timer_h> {
+  Cx Delay Repeat_interval_ create_timer_impl
+} ;;
+
+eval <context_h> *Cx <timer_h> *Timer <listener_h> *Lis timer_add_action_listener | add_action_listener @public -> <void> {
+  Cx Timer Lis ^timer_impl_install_action_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <timer_h> *Timer <listener_h> *Lis timer_remove_action_listener | remove_action_listener @public -> <void> {
+  Cx Timer Lis ^timer_impl_uninstall_action_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <timer_h> *Timer <cstr> *Command timer_set_action_command | set_action_command @public -> <void> {
+  Cx Timer Command ^timer_impl_set_action_command call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <timer_h> *Timer timer_start | start @public -> <void> {
+  Cx Timer ^timer_impl_start call_impl_1_void
+} ;;
+
+eval <context_h> *Cx <timer_h> *Timer timer_stop | stop @public -> <void> {
+  Cx Timer ^timer_impl_stop call_impl_1_void
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <int> *Delay <int maybe> *Repeat_interval_ create_timer_impl -> <timer_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <timer_h> *Timer <listener_h> *Lis timer_impl_install_action_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <timer_h> *Timer <listener_h> *Lis timer_impl_uninstall_action_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <timer_h> *Timer <cstr> *Command timer_impl_set_action_command -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <timer_h> *Timer timer_impl_start -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <timer_h> *Timer timer_impl_stop -> <void> @native ;;
+
+
+# -- color --
+
+data <color> @protected :=
+  alpha_value: <int>
+  red_value: <int>
+  green_value: <int>
+  blue_value: <int>
+  color$ ;;
+
+eval <int> *Alpha <int> *Red <int> *Green <int> *Blue new_color | color @public -> <color> {
+  [ Alpha ge0?, Alpha 255 le?,
+    Red ge0?, Red 255 le?,
+    Green ge0?, Green 255 le?,
+    Blue ge0?, Blue 255 le? ] bool.and
+  >> case {
+  ; true$ -> alpha_value: Alpha red_value: Red green_value: Green blue_value: Blue color$
+  ; ** -> bad_arg$ "Invalid color." new_exception >> throw
+  }
+} ;;
+
+eval <int> *Red <int> *Green <int> *Blue new_opaque_color | new_color | color @public -> <color> {
+  255 Red Green Blue color
+} ;;
+
+eval <int> *ARGB argb_int_to_color | argb_color @public -> <color> {
+  ARGB %xFF bit_and = *B,
+  ARGB 8 shift_right = *ARG,
+  ARG %xFF bit_and = *G,
+  ARG 8 shift_right = *AR,
+  AR %xFF bit_and = *R,
+  AR 8 shift_right = *A,
+  A R G B color
+} ;;
+
+eval <int> *RGB rgb_int_to_color | rgb_color @public -> <color> {
+  if {
+  ; (RGB ge0?) (RGB %xFFFFFF le?) and ->
+    RGB %xFF bit_and = *B,
+    RGB 8 shift_right = *RG,
+    RG %xFF bit_and = *G,
+    RG 8 shift_right = *R,
+    R G B color
+  ; otherwise -> bad_arg$ "Invalid color." new_exception >> throw
+  }
+} ;;
+
+eval black_color      | black      @public -> <color> { %x00 %x00 %x00 color } ;;
+eval blue_color       | blue       @public -> <color> { %x00 %x00 %xFF color } ;;
+eval cyan_color       | cyan       @public -> <color> { %x00 %xFF %xFF color } ;;
+eval dark_gray_color  | dark_gray  @public -> <color> { %x40 %x40 %x40 color } ;;
+eval gray_color       | gray       @public -> <color> { %x80 %x80 %x80 color } ;;
+eval green_color      | green      @public -> <color> { %x00 %xFF %x00 color } ;;
+eval light_gray_color | light_gray @public -> <color> { %xC0 %xC0 %xC0 color } ;;
+eval magenta_color    | magenta    @public -> <color> { %xFF %x00 %xFF color } ;;
+eval orange_color     | orange     @public -> <color> { %xFF %xC8 %x00 color } ;;
+eval pink_color       | pink       @public -> <color> { %xFF %xAF %xAF color } ;;
+eval red_color        | red        @public -> <color> { %xFF %x00 %x00 color } ;;
+eval white_color      | white      @public -> <color> { %xFF %xFF %xFF color } ;;
+eval yellow_color     | yellow     @public -> <color> { %xFF %xFF %x00 color } ;;
+
+
+# -- font --
+
+data <font> @opaque := @native ;;
+
+data <font_style> @public :=
+| plain_style$
+| italic_style$
+| bold_style$
+| bold_italic_style$ ;;
+
+eval <context_h> *Cx <cstr> *Name <font_style> *Style <int> *Points create_font @public -> <font> {
+  Cx Name Style Points create_font_impl
+} ;;
+
+eval serif_font | serif @public -> <cstr> { "Serif" } ;;
+eval sans_serif_font | sans_serif @public -> <cstr> { "SansSerif" } ;;
+eval monospaced_font | monospaced @public -> <cstr> { "Monospaced" } ;;
+eval dialog_font | dialog @public -> <cstr> { "Dialog" } ;;
+eval dialog_input_font | dialog_input @public -> <cstr> { "DialogInput" } ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx <cstr> *Name <font_style> *Style <int> *Points create_font_impl -> <font> @native ;;
+
+
+# -- miscellaneous data --
+
+data <point> @public :=
+  x: <int>
+  y: <int>
+  point$ ;;
+
+data <dimension> @public :=
+  width: <int>
+  height: <int>
+  dimension$ ;;
+
+data <insets> @public :=
+  top: <int>
+  left: <int>
+  bottom: <int>
+  right: <int>
+  insets$ ;;
+
+data <horizontal_alignment> @public :=
+| horizontal_left$
+| horizontal_center$
+| horizontal_right$
+| horizontal_leading$
+| horizontal_trailing$ ;;
+
+data <vertical_alignment> @public :=
+| vertical_top$
+| vertical_center$
+| vertical_bottom$ ;;
+
+data <vk> @public :=
+| vk_enter$ | vk_back_space$ | vk_tab$ | vk_cancel$
+| vk_clear$ | vk_shift$ | vk_control$ | vk_alt$
+| vk_pause$ | vk_caps_lock$ | vk_escape$ | vk_space$
+| vk_page_up$ | vk_page_down$
+| vk_end$ | vk_home$
+| vk_left$ | vk_up$ | vk_right$ | vk_down$
+| vk_comma$ | vk_minus$ | vk_period$ | vk_slash$
+| vk_0$ | vk_1$ | vk_2$ | vk_3$ | vk_4$
+| vk_5$ | vk_6$ | vk_7$ | vk_8$ | vk_9$
+| vk_semicolon$ | vk_equals$
+| vk_a$ | vk_b$ | vk_c$ | vk_d$
+| vk_e$ | vk_f$ | vk_g$ | vk_h$
+| vk_i$ | vk_j$ | vk_k$ | vk_l$
+| vk_m$ | vk_n$ | vk_o$ | vk_p$
+| vk_q$ | vk_r$ | vk_s$ | vk_t$
+| vk_u$ | vk_v$ | vk_w$ | vk_x$
+| vk_y$ | vk_z$
+| vk_open_bracket$ | vk_back_slash$ | vk_close_bracket$
+| vk_numpad0$ | vk_numpad1$ | vk_numpad2$ | vk_numpad3$
+| vk_numpad4$ | vk_numpad5$ | vk_numpad6$ | vk_numpad7$
+| vk_numpad8$ | vk_numpad9$
+| vk_multiply$ | vk_add$ | vk_separator$ | vk_subtract$
+| vk_decimal$ | vk_divide$ | vk_delete$
+| vk_num_lock$ | vk_scroll_lock$
+| vk_f1$ | vk_f2$ | vk_f3$ | vk_f4$
+| vk_f5$ | vk_f6$ | vk_f7$ | vk_f8$
+| vk_f9$ | vk_f10$ | vk_f11$ | vk_f12$
+| vk_f13$ | vk_f14$ | vk_f15$ | vk_f16$
+| vk_f17$ | vk_f18$ | vk_f19$ | vk_f20$
+| vk_f21$ | vk_f22$ | vk_f23$ | vk_f24$
+| vk_printscreen$ | vk_insert$ | vk_help$ | vk_meta$
+| vk_back_quote$ | vk_quote$
+| vk_kp_up$ | vk_kp_down$ | vk_kp_left$ | vk_kp_right$
+| vk_dead_grave$ | vk_dead_acute$ | vk_dead_circumflex$
+| vk_dead_tilde$ | vk_dead_macron$ | vk_dead_breve$
+| vk_dead_abovedot$ | vk_dead_diaeresis$ | vk_dead_abovering$
+| vk_dead_doubleacute$ | vk_dead_caron$ | vk_dead_cedilla$
+| vk_dead_ogonek$ | vk_dead_iota$ | vk_dead_voiced_sound$
+| vk_dead_semivoiced_sound$
+| vk_ampersand$ | vk_asterisk$ | vk_quotedbl$
+| vk_less$ | vk_greater$
+| vk_braceleft$ | vk_braceright$
+| vk_at$ | vk_colon$
+| vk_circumflex$ | vk_dollar$ | vk_euro_sign$
+| vk_exclamation_mark$ | vk_inverted_exclamation_mark$
+| vk_left_parenthesis$
+| vk_number_sign$
+| vk_plus$
+| vk_right_parenthesis$
+| vk_underscore$
+| vk_final$
+| vk_convert$ | vk_nonconvert$
+| vk_accept$ | vk_modechange$
+| vk_kana$ | vk_kanji$
+| vk_alphanumeric$ | vk_katakana$ | vk_hiragana$
+| vk_full_width$ | vk_half_width$
+| vk_roman_characters$
+| vk_all_candidates$ | vk_previous_candidate$
+| vk_code_input$
+| vk_japanese_katakana$ | vk_japanese_hiragana$ | vk_japanese_roman$
+| vk_kana_lock$
+| vk_input_method_on_off$
+| vk_cut$ | vk_copy$ | vk_paste$
+| vk_undo$ | vk_again$
+| vk_find$ | vk_props$ | vk_stop$
+| vk_compose$ | vk_alt_graph$
+| vk_begin$
+| vk_context_menu$
+| vk_windows$
+| vk_undefined$ ;;
+
+
+###  implementation framework  ###
+
+# -- internal messages --
+
+extend <act.msg> :=
+| <void result> void_res$
+| <bool result> bool_res$
+| <int result> int_res$
+| <cstr result> cstr_res$
+| <confirmed result> confirmed_res$
+| <a_panel_h result> a_panel_res$
+| <cursor_h result> cursor_res$
+| <a_document_h result> a_document_res$
+| <act.post_h> keep$ ;;
+
+
+# -- native implementation call --
+
+alias type <*A result_sender> := <<A result> void fun> ;;
+
+# 1 param -> void
+eval <context_h> *Cx <*A> *Param1 <context_h <void result_sender> A void fun> *Native_impl call_impl_1_void -> <void> {
+  \ <void result_sender> *RS -> <void> { Cx RS Param1 &Native_impl } call_impl_n_void
+} ;;
+
+# 1 param -> bool
+eval <context_h> *Cx <*A> *Param1 <context_h <bool result_sender> A void fun> *Native_impl call_impl_1_bool -> <bool> {
+  \ <bool result_sender> *RS -> <void> { Cx RS Param1 &Native_impl } call_impl_n_bool
+} ;;
+
+# 1 param -> int
+eval <context_h> *Cx <*A> *Param1 <context_h <int result_sender> A void fun> *Native_impl call_impl_1_int -> <int> {
+  \ <int result_sender> *RS -> <void> { Cx RS Param1 &Native_impl } call_impl_n_int
+} ;;
+
+# 1 param -> cstr
+eval <context_h> *Cx <*A> *Param1 <context_h <cstr result_sender> A void fun> *Native_impl call_impl_1_cstr -> <cstr> {
+  \ <cstr result_sender> *RS -> <void> { Cx RS Param1 &Native_impl } call_impl_n_cstr
+} ;;
+
+# 1 param -> a_panel_h
+eval <context_h> *Cx <*A> *Param1 <context_h <a_panel_h result_sender> A void fun> *Native_impl call_impl_1_a_panel_h -> <a_panel_h> {
+  \ <a_panel_h result_sender> *RS -> <void> { Cx RS Param1 &Native_impl } call_impl_n_a_panel_h
+} ;;
+
+# 1 param -> cursor_h
+eval <context_h> *Cx <*A> *Param1 <context_h <cursor_h result_sender> A void fun> *Native_impl call_impl_1_cursor_h -> <cursor_h> {
+  \ <cursor_h result_sender> *RS -> <void> { Cx RS Param1 &Native_impl } call_impl_n_cursor_h
+} ;;
+
+# 1 param -> a_document_h
+eval <context_h> *Cx <*A> *Param1 <context_h <a_document_h result_sender> A void fun> *Native_impl call_impl_1_a_document_h -> <a_document_h> {
+  \ <a_document_h result_sender> *RS -> <void> { Cx RS Param1 &Native_impl } call_impl_n_a_document_h
+} ;;
+
+# 2 params -> void
+eval <context_h> *Cx <*A> *Param1 <*B> *Param2 <context_h <void result_sender> A B void fun> *Native_impl call_impl_2_void -> <void> {
+  \ <void result_sender> *RS -> <void> { Cx RS Param1 Param2 &Native_impl } call_impl_n_void
+} ;;
+
+# 3 params -> void
+eval <context_h> *Cx <*A> *Param1 <*B> *Param2 <*C> *Param3 <context_h <void result_sender> A B C void fun> *Native_impl call_impl_3_void -> <void> {
+  \ <void result_sender> *RS -> <void> { Cx RS Param1 Param2 Param3 &Native_impl } call_impl_n_void
+} ;;
+
+# 3 params -> cstr
+eval <context_h> *Cx <*A> *Param1 <*B> *Param2 <*C> *Param3 <context_h <cstr result_sender> A B C void fun> *Native_impl call_impl_3_cstr -> <cstr> {
+  \ <cstr result_sender> *RS -> <void> { Cx RS Param1 Param2 Param3 &Native_impl } call_impl_n_cstr
+} ;;
+
+# 4 params -> void
+eval <context_h> *Cx <*A> *Param1 <*B> *Param2 <*C> *Param3 <*D> *Param4 <context_h <void result_sender> A B C D void fun> *Native_impl call_impl_4_void -> <void> {
+  \ <void result_sender> *RS -> <void> { Cx RS Param1 Param2 Param3 Param4 &Native_impl } call_impl_n_void
+} ;;
+
+# 5 params -> confirmed
+eval <context_h> *Cx <*A> *Param1 <*B> *Param2 <*C> *Param3 <*D> *Param4 <*E> *Param5 <context_h <confirmed result_sender> A B C D E void fun> *Native_impl call_impl_5_confirmed -> <confirmed> {
+  \ <confirmed result_sender> *RS -> <void> { Cx RS Param1 Param2 Param3 Param4 Param5 &Native_impl } call_impl_n_confirmed
+} ;;
+
+# n params -> void
+eval <<void result_sender> void fun> *Action call_impl_n_void -> <void> {
+  Action
+    \ <void result> *Res -> <act.msg+> { Res void_res$ }
+    \ <act.msg+> *Msg -> <void result> { Msg = *R void_res$, R }
+    call_impl_n_t
+} ;;
+
+# n params -> bool
+eval <<bool result_sender> void fun> *Action call_impl_n_bool -> <bool> {
+  Action
+    \ <bool result> *Res -> <act.msg+> { Res bool_res$ }
+    \ <act.msg+> *Msg -> <bool result> { Msg = *R bool_res$, R }
+    call_impl_n_t
+} ;;
+
+# n params -> int
+eval <<int result_sender> void fun> *Action call_impl_n_int -> <int> {
+  Action
+    \ <int result> *Res -> <act.msg+> { Res int_res$ }
+    \ <act.msg+> *Msg -> <int result> { Msg = *R int_res$, R }
+    call_impl_n_t
+} ;;
+
+# n params -> cstr
+eval <<cstr result_sender> void fun> *Action call_impl_n_cstr -> <cstr> {
+  Action
+    \ <cstr result> *Res -> <act.msg+> { Res cstr_res$ }
+    \ <act.msg+> *Msg -> <cstr result> { Msg = *R cstr_res$, R }
+    call_impl_n_t
+} ;;
+
+# n params -> confirmed
+eval <<confirmed result_sender> void fun> *Action call_impl_n_confirmed -> <confirmed> {
+  Action
+    \ <confirmed result> *Res -> <act.msg+> { Res confirmed_res$ }
+    \ <act.msg+> *Msg -> <confirmed result> { Msg = *R confirmed_res$, R }
+    call_impl_n_t
+} ;;
+
+# n params -> a_panel_h
+eval <<a_panel_h result_sender> void fun> *Action call_impl_n_a_panel_h -> <a_panel_h> {
+  Action
+    \ <a_panel_h result> *Res -> <act.msg+> { Res a_panel_res$ }
+    \ <act.msg+> *Msg -> <a_panel_h result> { Msg = *R a_panel_res$, R }
+    call_impl_n_t
+} ;;
+
+# n params -> cursor_h
+eval <<cursor_h result_sender> void fun> *Action call_impl_n_cursor_h -> <cursor_h> {
+  Action
+    \ <cursor_h result> *Res -> <act.msg+> { Res cursor_res$ }
+    \ <act.msg+> *Msg -> <cursor_h result> { Msg = *R cursor_res$, R }
+    call_impl_n_t
+} ;;
+
+# n params -> a_document_h
+eval <<a_document_h result_sender> void fun> *Action call_impl_n_a_document_h -> <a_document_h> {
+  Action
+    \ <a_document_h result> *Res -> <act.msg+> { Res a_document_res$ }
+    \ <act.msg+> *Msg -> <a_document_h result> { Msg = *R a_document_res$, R }
+    call_impl_n_t
+} ;;
+
+# n params -> t
+eval
+    <<*A result_sender> void fun> *Action 
+    <<A result> act.msg+ fun> *Coder
+    <act.msg+ <A result> fun> *Decoder
+    call_impl_n_t -> <A> {
+  act.open_mbox = (| *B, *P |),
+  \ <A result> *Res -> <void> { P (Res &Coder) act.send } = *Sender,
+  Sender &Action,
+  B act.wait_forever$ act.listen,
+  (B act.receive >> value) &Decoder >> unwrap
+} ;;
+
+
+# -- event processing --
+
+alias type <eid_list> := <<cstr event_info_d tuple> list> ;;
+
+eval <context_h> *ECx callback_ended -> <void> @native ;;
+
+eval <context_h> *ECx <cstr> *E <eid_list> *EIDs
+    <context_h cstr event_info void fun> *L fire_event -> <void> {
+  smap.new_map EIDs map.add_list = *EM,
+  \\ <void> {
+    \\ <void> { ECx E EM &L } catch_all_try >> case {
+    ; *Exc exc$ -> Exc stdio.cstderr debug.dump_to
+    ; ** ->
+    },
+    ECx callback_ended
+  } act.spawn >> act.actor_h = *A,
+  A 8 act.set_priority,
+  A act.start
+} ;;
+
+
+# -- monitor --
+
+data <monitor_d> :=
+  keeping: <bool>
+  monitor_d$ ;;
+
+eval <act.post_h void fun> *Reply monitor -> <void> {
+  act.open_mbox = (| *B, *P |),
+  P &Reply,
+  act.my_actor_h true$ act.run_background,
+  ((keeping: false$ monitor_d$) value$)
+      &\ <monitor_d maybe> *D_ -> <void> {
+    D_ case {
+    ; *D value$ ->
+      B act.receive >> case {
+      ; *M value$ -> (D M monitor_dispatch) &&
+      ; ** -> B act.wait_forever$ act.listen, D_ &&
+      }
+    ; ** ->  # exit
+    }
+  }
+} ;;
+
+eval <monitor_d> *D <act.msg+> *Msg monitor_dispatch -> <monitor_d maybe> {
+  Msg case {
+  ; *P keep$ -> D P monitor_keep
+  ; ** -> D value$
+  }
+} ;;
+
+eval <monitor_d> *D <act.post_h> *P monitor_keep -> <monitor_d maybe> {
+  D keeping >> case {
+  ; false$ ->
+    ^keeper act.spawn >> act.start,
+    keeping: true$ :: D monitor_d$
+  ; ** -> D
+  } = *D',
+  P ((void$ fin$) void_res$) act.send,
+  D' value$
+} ;;
+
+
+# -- keeper --
+
+eval start_keep -> <void> @native ;;
+eval end_keep -> <void> @native ;;
+
+eval start_keeper -> <void> {
+  act.open_mbox = (| *B, *P |),
+  (_initd_ monitor) (P keep$) act.send,
+  B act.wait_forever$ act.listen,
+  B act.receive >> value = (void$ fin$) void_res$,
+  void$
+} ;;
+
+eval keeper -> <void> {
+  \\ <void> { end_keep } runtime.add_action_to_shutdown,
+  start_keep  # not return until end_keep will be called
+} ;;
+
+
+# -- initialization --
+
+data <d> :=
+  monitor: <act.post_h>
+  d$ ;;
+
+eval <void fun> *Shutdown_action bridge_init -> <void> @native ;;
+
+eval _init_ -> <d> {
+  \\ <void> { 0 10000 runtime.shutdown } bridge_init,
+  ^monitor actu.startup_svr = (| **, *P |),
+  monitor: P d$
+} ;;

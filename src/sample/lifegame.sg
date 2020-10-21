@@ -1,0 +1,618 @@
+###########################################################################
+# MIT License                                                             #
+# Copyright (c) 2020 AKIYAMA Isao                                         #
+#                                                                         #
+# Permission is hereby granted, free of charge, to any person obtaining   #
+# a copy of this software and associated documentation files (the         #
+# "Software"), to deal in the Software without restriction, including     #
+# without limitation the rights to use, copy, modify, merge, publish,     #
+# distribute, sublicense, and/or sell copies of the Software, and to      #
+# permit persons to whom the Software is furnished to do so, subject to   #
+# the following conditions:                                               #
+#                                                                         #
+# The above copyright notice and this permission notice shall be          #
+# included in all copies or substantial portions of the Software.         #
+#                                                                         #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,         #
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF      #
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  #
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY    #
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,    #
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       #
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                  #
+###########################################################################
+
+import "sango.actor" -> act ;;
+import "sango.cstr" -> cstr ;;
+import "sango.entity" -> ent ;;
+import "sango.list" -> list ;;
+import "sango.num.int" -> int ;;
+import "sango.system.runtime" -> runtime ;;
+import "sango.tuple" -> tuple ;;
+import "sango.util.avltree.map" -> avlmap ;;
+import "sango.util.iter" -> iter ;;
+import "sango.util.map" -> map ;;
+import "sgswing.swing" -> sw ;;
+
+import "sango.debug" -> debug ;;
+import "sango.io.stdio" -> stdio ;;
+
+# universe map
+
+eval map_size -> <int> { 30 } ;;  # square area of cells
+
+eval map_display_dimension -> <sw.dimension> {
+  (map_size cell_display_size prod) (map_size cell_display_size prod) sw.dimension$
+} ;;
+
+eval map_bg_color -> <sw.color> { sw.light_gray } ;;
+eval map_base_color -> <sw.color> { sw.white } ;;
+eval map_message_color -> <sw.color> { sw.dark_gray } ;;
+eval map_life_color -> <sw.color> { sw.blue } ;;
+eval map_cursor_color -> <sw.color> { sw.magenta } ;;
+
+# cell
+
+eval cell_display_size -> <int> { 16 } ;;
+
+eval cell_display_dimension -> <sw.dimension> {
+  cell_display_size cell_display_size sw.dimension$
+} ;;
+
+alias type <position> := <int int tuple> ;;
+
+eval position_ord_fs -> <position ord_fs> {
+  compare_f: ^position_compare
+    eq?_f_: none$
+    lt?_f_: none$
+    le?_f_: none$
+    gt?_f_: none$
+    ge?_f_: none$
+    ord_fs$
+} ;;
+
+eval <position> *P1 <position> *P2 position_compare -> <ordering> {
+  P1 = (| *P1x, *P1y |),
+  P2 = (| *P2x, *P2y |),
+  ((P1x map_size prod) P1y sum) ((P2x map_size prod) P2y sum) int_compare
+} ;;
+
+eval <int> *X <int> *Y cell_position -> <position maybe> {
+  map_display_dimension = *MaxX *MaxY sw.dimension$,
+  if {
+  ; X lt0? -> none$ 
+  ; X MaxX ge? -> none$ 
+  ; Y lt0? -> none$ 
+  ; Y MaxY ge? -> none$ 
+  ; otherwise -> (| X cell_display_size quot, Y cell_display_size quot |) value$
+  }
+} ;;
+
+eval <position> *Pos cell_display_point -> <sw.point> {
+  Pos = (| *PX, *PY |),
+  (PX cell_display_size prod) (PY cell_display_size prod) sw.point$
+} ;;
+
+eval <int> *PY py_north -> <int maybe> {
+  PY dec = *PY',
+  if {
+  ; PY' ge0? -> PY' value$
+  ; otherwise -> none$
+  }
+} ;;
+
+eval <int> *PX px_east -> <int maybe> {
+  PX inc = *PX',
+  if {
+  ; PX' map_size lt? -> PX' value$
+  ; otherwise -> none$
+  }
+} ;;
+
+eval <int> *PY py_south -> <int maybe> {
+  PY inc = *PY',
+  if {
+  ; PY' map_size lt? -> PY' value$
+  ; otherwise -> none$
+  }
+} ;;
+
+eval <int> *PX px_west -> <int maybe> {
+  PX dec = *PX',
+  if {
+  ; PX' ge0? -> PX' value$
+  ; otherwise -> none$
+  }
+} ;;
+
+eval <position> *Pos north -> <position maybe> {
+  Pos = (| *PX, *PY |),
+  PY py_north >> case {
+  ; *PY' value$ -> (| PX, PY' |) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <position> *Pos north_east -> <position maybe> {
+  Pos = (| *PX, *PY |),
+  (| PX px_east, PY py_north |) >> case {
+  ; (| *PX' value$, *PY' value$ |) -> (| PX', PY' |) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <position> *Pos east -> <position maybe> {
+  Pos = (| *PX, *PY |),
+  PX px_east >> case {
+  ; *PX' value$ -> (| PX', PY |) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <position> *Pos south_east -> <position maybe> {
+  Pos = (| *PX, *PY |),
+  (| PX px_east, PY py_south |) >> case {
+  ; (| *PX' value$, *PY' value$ |) -> (| PX', PY' |) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <position> *Pos south -> <position maybe> {
+  Pos = (| *PX, *PY |),
+  PY py_south >> case {
+  ; *PY' value$ -> (| PX, PY' |) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <position> *Pos south_west -> <position maybe> {
+  Pos = (| *PX, *PY |),
+  (| PX px_west, PY py_south |) >> case {
+  ; (| *PX' value$, *PY' value$ |) -> (| PX', PY' |) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <position> *Pos west -> <position maybe> {
+  Pos = (| *PX, *PY |),
+  PX px_west >> case {
+  ; *PX' value$ -> (| PX', PY |) value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <position> *Pos north_west -> <position maybe> {
+  Pos = (| *PX, *PY |),
+  (| PX px_west, PY py_north |) >> case {
+  ; (| *PX' value$, *PY' value$ |) -> (| PX', PY' |) value$
+  ; ** -> none$
+  }
+} ;;
+
+# generation = set of lives
+
+data <generation> :=
+  number: <int>
+  lives: <lives>
+  generation$ ;;
+
+alias type <lives> := <position sw.paint_action map.map> ;;
+
+eval initial_generation -> <generation> {
+  number: 1
+    lives: (position_ord_fs avlmap.new_map)
+    generation$
+} ;;
+
+eval <generation> *Generation generation_empty? -> <bool> {
+  Generation lives >> map.empty?
+} ;;
+
+eval <generation> *Generation lives_paint_actions -> <sw.paint_action list> {
+  (Generation lives >> map.iter) ^tuple.pair_second iter.add_modifier = *I,  # extract assoc data
+  I list.new_reverse_list  # do not care order, so for good performance
+} ;;
+
+# initialized data
+
+data <d> :=
+  control_d: <ent.eref>
+  d$ ;;
+
+# persistent data
+
+extend <ent.ent_d> :=
+  <cd> cd_ent$ ;;
+
+data <cd> :=
+  config: <cdc>
+  state: <cds>
+  cd$ ;;
+
+data <cdc> :=
+  view_config: <view_config>
+  cdc$ ;;
+
+data <view_config> :=
+  frame: <sw.frame_h>
+  generation_number_display: <sw.label_h>
+  map_display: <sw.canvas_h>
+  reset_button: <sw.button_h>
+  next_button: <sw.button_h>
+  auto_button: <sw.button_h>
+  map_message_font: <sw.font>
+  view_config$ ;;
+
+data <cds> :=
+  generation: <generation>
+  next_generation_calc_: <<<generation bool tuple> act.async_h> maybe>
+  cursor_: <position maybe>
+  auto_timer_: <sw.timer_h maybe>
+  cds$ ;;
+
+eval read_control_d -> <cd> {
+  (_initd_ control_d) ent.read = *D cd_ent$,
+  D
+} ;;
+
+eval <cd> *D write_control_d -> <void> {
+  (_initd_ control_d) (D cd_ent$) ent.write >> ignore
+} ;;
+
+
+# initialize
+
+eval _init_ -> <d> {
+  sw.icx = *Cx,
+
+  Cx "Life game" sw.create_frame = *Frame,
+
+  Cx sw.create_canvas = *Map_display,
+  Cx (Map_display sw.as_jcomponent) map_bg_color sw.set_background,
+  Cx (Map_display sw.as_component) (map_display_dimension value$) sw.set_preferred_size,
+  Cx sw.monospaced_font sw.plain_style$ 14 sw.create_font = *Map_message_font,
+
+  Cx "Generation 1" sw.create_label = *Generation_display,
+
+  Cx sw.create_button = *Reset_button,
+  Cx (Reset_button sw.as_abutton) "Reset" sw.set_text,
+
+  Cx sw.create_button = *Next_button,
+  Cx (Next_button sw.as_abutton) "Next" sw.set_text,
+  Cx (Next_button sw.as_component) false$ sw.set_enabled,
+
+  Cx sw.create_button = *Auto_button,
+  Cx (Auto_button sw.as_abutton) "Start auto" sw.set_text,
+  Cx (Auto_button sw.as_component) false$ sw.set_enabled,
+
+  Cx 1 3 sw.create_grid_layout_panel = *Command_panel,
+  Cx (Command_panel sw.as_panel) (Reset_button sw.as_component) sw.add_component,
+  Cx (Command_panel sw.as_panel) (Next_button sw.as_component) sw.add_component,
+  Cx (Command_panel sw.as_panel) (Auto_button sw.as_component) sw.add_component,
+
+  Cx Frame sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (Generation_display sw.as_component) sw.border_layout_north$ sw.add_component,
+  Cx CP (Map_display sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (Command_panel sw.as_component) sw.border_layout_south$ sw.add_component,
+
+  Cx (Map_display sw.as_component) (^map_mouse_listener sw.create_listener) sw.add_mouse_listener,
+  Cx (Map_display sw.as_component) (^map_mouse_listener sw.create_listener) sw.add_mouse_motion_listener,
+  Cx (Reset_button sw.as_abutton) (^reset_button_listener sw.create_listener) sw.add_action_listener,
+  Cx (Next_button sw.as_abutton) (^next_button_listener sw.create_listener) sw.add_action_listener,
+  Cx (Auto_button sw.as_abutton) (^auto_button_listener sw.create_listener) sw.add_action_listener,
+
+  Cx (Frame sw.as_window) sw.pack,
+  Cx (Frame sw.as_window) (100 100 sw.in_screen$) sw.set_location,
+  Cx Frame sw.exit_on_frame_close$ sw.set_default_close_operation,
+
+  frame: Frame
+    generation_number_display: Generation_display
+    map_display: Map_display
+    reset_button: Reset_button
+    next_button: Next_button
+    auto_button: Auto_button
+    map_message_font: Map_message_font
+    view_config$ = *View_config,
+
+  view_config: View_config
+    cdc$ = *Config,
+
+  generation: initial_generation
+    next_generation_calc_: none$
+    cursor_: none$
+    auto_timer_: none$
+    cds$ = *State,
+
+  config: Config
+    state: State
+    cd$ = *Control_d,
+
+  Control_d Cx update_displays,
+
+  control_d: ((Control_d cd_ent$) none$ ent.create_entity)
+    d$
+} ;;
+
+# main
+
+eval _main_ -> <void> {
+  sw.icx (read_control_d >> config >> view_config >> frame) true$ sw.set_visible
+} ;;
+
+eval <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI map_mouse_listener -> <void> {
+  E case {
+  ; "mouse.moved" ->
+    EI "x" map.assoc >> value = *X sw.int_eid$,
+    EI "y" map.assoc >> value = *Y sw.int_eid$,
+    ECx (X Y cell_position) control_set_cursor
+  ; "mouse.exited" ->
+    ECx none$ control_set_cursor
+  ; "mouse.clicked" ->
+    EI "x" map.assoc >> value = *X sw.int_eid$,
+    EI "y" map.assoc >> value = *Y sw.int_eid$,
+    ECx (X Y cell_position >> value) control_flip
+  ; ** ->
+  }
+} ;;
+
+eval <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI reset_button_listener -> <void> {
+  ECx control_reset
+} ;;
+
+eval <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI next_button_listener -> <void> {
+  ECx control_next
+} ;;
+
+eval <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI auto_button_listener -> <void> {
+  ECx control_auto
+} ;;
+
+eval <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI auto_timer_listener -> <void> {
+  ECx control_auto_timer_expired
+} ;;
+
+
+# control
+
+eval <sw.context_h> *Cx control_reset -> <void> {
+  read_control_d = *D,
+  generation: initial_generation
+    next_generation_calc_: none$
+    cursor_: none$
+    auto_timer_: none$
+    cds$ = *State',
+  state: State' :: D cd$ = *D',
+  D config >> view_config = *View_config,
+  Cx (View_config reset_button >> sw.as_component) true$ sw.set_enabled,
+  Cx (View_config next_button >> sw.as_component) false$ sw.set_enabled,
+  Cx (View_config auto_button >> sw.as_component) false$ sw.set_enabled,
+  D' Cx update_displays,
+  D' write_control_d
+} ;;
+
+eval <sw.context_h> *Cx <position maybe> *Pos_ control_set_cursor -> <void> {
+  read_control_d = *D,
+  D state = *State,
+  State cursor_ >> case {
+  ; Pos_ ->  # do nothing
+    D
+  ; ** ->
+    cursor_: Pos_ :: State cds$ = *State',
+    state: State' :: D cd$ = *D',
+    D' Cx update_displays,
+    D'
+  } = *DD,
+  DD write_control_d
+} ;;
+
+eval <sw.context_h> *Cx <position> *Pos control_flip -> <void> {
+  read_control_d = *D,
+  D state = *State,
+  State auto_timer_ >> case {
+  ; *** value$ -> D  # ignore under auto mode
+  ; ** ->
+    State generation = *Generation,
+    Generation lives = *Lives,
+    Lives Pos map.contain_key? >> case {
+    ; true$ -> Lives Pos map.delete
+    ; ** -> Lives Pos (Pos life_paint_action) map.add
+    } = *Lives',
+    lives: Lives' :: Generation generation$ = *Generation',
+    D config >> view_config = *View_config,
+    Cx (View_config >> next_button >> sw.as_component) (Lives' map.empty? >> not) sw.set_enabled,
+    Cx (View_config >> auto_button >> sw.as_component) (Lives' map.empty? >> not) sw.set_enabled,
+    generation: Generation' next_generation_calc_: none$ :: State cds$ = *State',
+    state: State' :: D cd$ = *D',
+    D' Cx update_displays,
+    D'
+  } = *DD,
+  DD write_control_d
+} ;;
+
+eval <sw.context_h> *Cx control_next -> <void> {
+  read_control_d = *D,
+  D Cx control_ahead = (| *D', *Static |),
+  D' state >> generation >> generation_empty? >> not = *Some_lives,
+  D' config >> view_config = *View_config,
+  Cx (View_config next_button >> sw.as_component) Some_lives sw.set_enabled,
+  Cx (View_config auto_button >> sw.as_component) Some_lives sw.set_enabled,
+  D' write_control_d
+} ;;
+
+eval <sw.context_h> *Cx control_auto -> <void> {
+  read_control_d = *D,
+  D state >> auto_timer_ >> case {
+  ; none$ -> D Cx control_start_auto
+  ; *Timer value$ -> D Cx Timer control_stop_auto
+  } = *D',
+  D' write_control_d
+} ;;
+
+eval <cd> *D <sw.context_h> *Cx control_start_auto -> <cd> {
+  D state = *State,
+  D config >> view_config = *View_config,
+  Cx (View_config reset_button >> sw.as_component) false$ sw.set_enabled,
+  Cx (View_config next_button >> sw.as_component) false$ sw.set_enabled,
+  Cx (View_config auto_button >> sw.as_abutton) "Stop auto" sw.set_text,
+  Cx 500 none$ sw.create_timer = *Timer,
+  Cx Timer (^auto_timer_listener sw.create_listener) sw.add_action_listener,
+  Cx Timer sw.start,
+  auto_timer_: (Timer value$) :: State cds$ = *State',
+  state: State' :: D cd$ = *D',
+  D'
+} ;;
+
+eval <cd> *D <sw.context_h> *Cx <sw.timer_h> *Timer control_stop_auto -> <cd> {
+  D state = *State,
+  Cx (State >> auto_timer_ >> value) sw.stop,
+  D config >> view_config = *View_config,
+  Cx (View_config reset_button >> sw.as_component) true$ sw.set_enabled,
+  Cx (View_config next_button >> sw.as_component) true$ sw.set_enabled,
+  Cx (View_config auto_button >> sw.as_abutton) "Start auto" sw.set_text,
+  auto_timer_: none$ :: State cds$ = *State',
+  state: State' :: D cd$ = *D',
+  D'
+} ;;
+
+eval <sw.context_h> *Cx control_auto_timer_expired -> <void> {
+  read_control_d = *D,
+  D Cx control_ahead = (| *D', *Static |),
+  D' state = *State',
+  State' generation = *Generation',
+  if {
+  ; Static ->
+    D' config >> view_config = *View_config,
+    Cx (View_config reset_button >> sw.as_component) true$ sw.set_enabled,
+    Cx (View_config next_button >> sw.as_component) true$ sw.set_enabled,
+    Cx (View_config auto_button >> sw.as_abutton) "Start auto" sw.set_text,
+    auto_timer_: none$ :: State' cds$ = *State'',
+    (state: State'' :: D' cd$) write_control_d,  # must execute before showing dialog
+    Cx (View_config frame >> sw.as_component)
+      "Auto mode" sw.plain_message$ "Detected static universe." sw.show_message_dialog
+  ; Generation' generation_empty? ->
+    D' config >> view_config = *View_config,
+    Cx (View_config reset_button >> sw.as_component) true$ sw.set_enabled,
+    Cx (View_config auto_button >> sw.as_abutton) "Start auto" sw.set_text,
+    Cx (View_config auto_button >> sw.as_component) false$ sw.set_enabled,
+    generation: initial_generation auto_timer_: none$ :: State' cds$ = *State'',
+    (state: State'' :: D' cd$) write_control_d,  # must execute before showing dialog
+    Cx (View_config frame >> sw.as_component)
+      "Auto mode" sw.plain_message$ "Detected no lives." sw.show_message_dialog
+  ; otherwise ->  # some lives
+    Cx (State' >> auto_timer_ >> value) sw.start,
+    D' write_control_d
+  }
+} ;;
+
+eval <cd> *D <sw.context_h> *Cx control_ahead -> <cd bool tuple> {
+  D state = *State,
+  State = generation: *Generation next_generation_calc_: *Next_generation_calc_ *** cds$,
+  Next_generation_calc_ case {
+  ; *N value$ ->
+    N act.sync = *NG fin$, NG
+  ; ** ->
+    Generation next_generation
+  } = (| *Generation', *Static |),
+  \\ <generation bool tuple> { Generation' next_generation } act.spawn = *NC,
+  NC act.start,  # calc next generation background in advance
+  generation: Generation' next_generation_calc_: (NC value$) :: State cds$ = *State',
+  state: State' :: D cd$ = *D',
+  D' Cx update_displays,
+  (| D', Static |)
+} ;;
+
+eval <generation> *Generation next_generation -> <generation bool tuple> {
+  Generation = number: *Num lives: *Lives *** generation$,
+  position_ord_fs avlmap.new_map = *M,
+  Lives >> map.iter = *I,  # orderd
+  I [] M
+      &\ <<position sw.paint_action tuple> iter> *Iter <position list> *L <position int map.map> *Map
+      -> <<position list> <position int map.map> tuple> {
+    Iter next >> case {
+    ; (| (| *P, ** |), *Iter' |) value$ ->
+      [ P ; L ] = *L',
+      P north      >> case { *P' value$ -> Map  P' count_up_on_map ; ** -> Map  } = *Map1,
+      P north_east >> case { *P' value$ -> Map1 P' count_up_on_map ; ** -> Map1 } = *Map2,
+      P east       >> case { *P' value$ -> Map2 P' count_up_on_map ; ** -> Map2 } = *Map3,
+      P south_east >> case { *P' value$ -> Map3 P' count_up_on_map ; ** -> Map3 } = *Map4,
+      P south      >> case { *P' value$ -> Map4 P' count_up_on_map ; ** -> Map4 } = *Map5,
+      P south_west >> case { *P' value$ -> Map5 P' count_up_on_map ; ** -> Map5 } = *Map6,
+      P west       >> case { *P' value$ -> Map6 P' count_up_on_map ; ** -> Map6 } = *Map7,
+      P north_west >> case { *P' value$ -> Map7 P' count_up_on_map ; ** -> Map7 } = *Map8,
+      Iter' L' Map8 &&
+    ; ** -> (| L, Map |)
+    }
+  } = (| *Life_list_r, *Count_map |),
+  Count_map map.iter = *MI,  # ordered
+  MI [] (position_ord_fs avlmap.new_map)
+      &\ <<position int tuple> iter> *Iter <position list> *PL <lives> *LM
+      -> <<position list> lives tuple> {
+    Iter next >> case {
+    ; (| (| *P, 3 |), *Iter' |) value$ -> Iter' [ P ; PL ] (LM P (P life_paint_action) map.add) &&
+    ; (| (| *P, 2 |), *Iter' |) value$ ->
+      Lives P map.contain_key? >> case {
+      ; true$ -> Iter' [ P ; PL ] (LM P (P life_paint_action) map.add) &&
+      ; ** -> Iter' PL LM &&
+      }
+    ; (| **, *Iter' |) value$ -> Iter' PL LM &&
+    ; ** -> (| PL, LM |)
+    }
+  } = (| *New_life_list_r, *Lives' |),
+  (|
+    number: (Num inc) lives: Lives' generation$,
+    Life_list_r New_life_list_r hard_eq?  # not changed => static universe
+  |)
+} ;;
+
+eval <position int map.map> *Count_map <position> *Pos count_up_on_map -> <position int map.map> {
+  Count_map Pos map.assoc >> case {
+  ; *N value$ -> Count_map Pos (N inc) map.add
+  ; ** -> Count_map Pos 1 map.add
+  }
+} ;;
+
+eval <position> *Pos life_paint_action -> <sw.paint_action> {
+  (Pos cell_display_point) cell_display_dimension sw.pa_fill_oval$
+} ;;
+
+eval <cd> *D <sw.context_h> *Cx update_displays -> <void> {
+  D config >> view_config = *View_config,
+  D state >> generation = *Generation,
+  Cx (View_config generation_number_display)
+    ([ "Generation ", Generation number >> int.format ] cstr.concat)
+    sw.set_text,
+  Cx (View_config map_display)
+    ([
+      D map_base_paint_actions,
+      D map_content_paint_actions,
+      D cursor_paint_actions
+     ] list.concat)
+    sw.set_paint_actions
+} ;;
+
+eval <cd> *D map_base_paint_actions -> <sw.paint_action list> {
+  [ map_base_color sw.pa_set_color$,
+    (0 0 sw.point$) map_display_dimension sw.pa_fill_rect$ ]
+} ;;
+
+eval <cd> *D map_content_paint_actions -> <sw.paint_action list> {
+  D state >> generation >> lives_paint_actions >> case {
+  ; [] ->
+    D config >> view_config = map_message_font: *Msg_font *** view_config$,
+    [ Msg_font sw.pa_set_font$,
+      map_message_color sw.pa_set_color$,
+      "There are no lives now." (50 100 sw.point$) sw.pa_draw_string$,
+      "Set lives by clicking this map." (50 130 sw.point$) sw.pa_draw_string$ ]
+  ; *As ->
+    [ map_life_color sw.pa_set_color$ ; As ]
+  }
+} ;;
+
+eval <cd> *D cursor_paint_actions -> <sw.paint_action list> {
+  D state >> cursor_ >> case {
+  ; *Pos value$ ->
+    [ map_cursor_color sw.pa_set_color$,
+      (Pos cell_display_point) cell_display_dimension sw.pa_draw_rect$ ]
+  ; ** -> []
+  }
+} ;;

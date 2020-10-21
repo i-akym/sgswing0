@@ -1,0 +1,1295 @@
+###########################################################################
+# MIT License                                                             #
+# Copyright (c) 2020 AKIYAMA Isao                                         #
+#                                                                         #
+# Permission is hereby granted, free of charge, to any person obtaining   #
+# a copy of this software and associated documentation files (the         #
+# "Software"), to deal in the Software without restriction, including     #
+# without limitation the rights to use, copy, modify, merge, publish,     #
+# distribute, sublicense, and/or sell copies of the Software, and to      #
+# permit persons to whom the Software is furnished to do so, subject to   #
+# the following conditions:                                               #
+#                                                                         #
+# The above copyright notice and this permission notice shall be          #
+# included in all copies or substantial portions of the Software.         #
+#                                                                         #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,         #
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF      #
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  #
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY    #
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,    #
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       #
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                  #
+###########################################################################
+import "sango.cstr" -> cstr ;;
+import "sango.debug" -> debug ;;
+import "sango.io.stdio" -> stdio ;;
+import "sango.list" -> list ;;
+import "sango.num.int" -> int ;;
+import "sango.string" -> str ;;
+import "sango.system.runtime" -> runtime ;;
+import "sango.util.map" -> map ;;
+import "sango.util.random" -> rand ;;
+import "sgswing.swing" -> sw ;;
+
+data <d> :=
+  loupe_img: <sw.image_h>
+  d$ ;;
+
+eval _init_ -> <d> {
+  sw.icx "images/loupe24x24.gif" sw.create_image_from_file = *Loupe_img,
+  loupe_img: Loupe_img d$
+} ;;
+
+eval _main_ -> <void> {
+  sw.icx = *Cx,
+  Cx "Button..." sw.create_menu_item = *Menu_item_button_test,
+  Cx "Check box..." sw.create_menu_item = *Menu_item_check_box_test,
+  Cx "Radio button..." sw.create_menu_item = *Menu_item_radio_button_test,
+  Cx "Text field..." sw.create_menu_item = *Menu_item_text_field_test,
+  Cx "Text area..." sw.create_menu_item = *Menu_item_text_area_test,
+  Cx "Random..." sw.create_menu_item = *Menu_item_canvas_random_test,
+  Cx "String..." sw.create_menu_item = *Menu_item_canvas_string_test,
+  Cx "Named colors..." sw.create_menu_item = *Menu_item_named_colors_test,
+  Cx "Border..." sw.create_menu_item = *Menu_item_border_test,
+  Cx "Scroll pane..." sw.create_menu_item = *Menu_item_scroll_pane_test,
+  Cx "Message dialog..." sw.create_menu_item = *Menu_item_message_dialog_test,
+  Cx "Confirm dialog..." sw.create_menu_item = *Menu_item_confirm_dialog_test,
+  Cx "Mouse..." sw.create_menu_item = *Menu_item_mouse_test,
+  Cx "Predefined cursor..." sw.create_menu_item = *Menu_item_predefined_cursor_test,
+  Cx "System custom cursor..." sw.create_menu_item = *Menu_item_system_custom_cursor_test,
+  Cx "Key..." sw.create_menu_item = *Menu_item_key_test,
+  Cx "Timer..." sw.create_menu_item = *Menu_item_timer_test,
+
+  Cx "Canvas" sw.create_menu = *Menu_canvas_test,
+  Cx Menu_canvas_test Menu_item_canvas_random_test sw.add_menu_item,
+  Cx Menu_canvas_test Menu_item_canvas_string_test sw.add_menu_item,
+  Cx "Color" sw.create_menu = *Menu_color_test,
+  Cx Menu_color_test Menu_item_named_colors_test sw.add_menu_item,
+  Cx "Dialog" sw.create_menu = *Menu_dialog_test,
+  Cx Menu_dialog_test Menu_item_message_dialog_test sw.add_menu_item,
+  Cx Menu_dialog_test Menu_item_confirm_dialog_test sw.add_menu_item,
+  Cx "Cursor" sw.create_menu = *Menu_cursor_test,
+  Cx Menu_cursor_test Menu_item_predefined_cursor_test sw.add_menu_item,
+  Cx Menu_cursor_test Menu_item_system_custom_cursor_test sw.add_menu_item,
+
+  Cx "Test1" sw.create_menu = *Menu_test1,
+  Cx Menu_test1 Menu_item_button_test sw.add_menu_item,
+  Cx Menu_test1 Menu_item_check_box_test sw.add_menu_item,
+  Cx Menu_test1 Menu_item_radio_button_test sw.add_menu_item,
+  Cx Menu_test1 Menu_item_text_field_test sw.add_menu_item,
+  Cx Menu_test1 Menu_item_text_area_test sw.add_menu_item,
+  Cx Menu_test1 Menu_canvas_test sw.add_menu,
+  Cx Menu_test1 Menu_color_test sw.add_menu,
+  Cx Menu_test1 Menu_item_border_test sw.add_menu_item,
+  Cx Menu_test1 Menu_item_scroll_pane_test sw.add_menu_item,
+  Cx Menu_test1 Menu_dialog_test sw.add_menu,
+  Cx Menu_test1 Menu_item_mouse_test sw.add_menu_item,
+  Cx Menu_test1 Menu_cursor_test sw.add_menu,
+  Cx Menu_test1 Menu_item_key_test sw.add_menu_item,
+  Cx Menu_test1 Menu_item_timer_test sw.add_menu_item,
+
+  Cx sw.create_menu_bar = *Menu_bar,
+  Cx Menu_bar Menu_test1 sw.add_menu,
+
+  Cx "Test" sw.create_frame = *Frame,
+  Cx Frame Menu_bar sw.set_menu_bar,
+
+  Cx (Menu_item_button_test sw.as_abutton) (Cx (Frame sw.as_window) setup_button_test) sw.add_action_listener,
+  Cx (Menu_item_check_box_test sw.as_abutton) (Cx (Frame sw.as_window) setup_check_box_test) sw.add_action_listener,
+  Cx (Menu_item_radio_button_test sw.as_abutton) (Cx (Frame sw.as_window) setup_radio_button_test) sw.add_action_listener,
+  Cx (Menu_item_text_field_test sw.as_abutton) (Cx (Frame sw.as_window) setup_text_field_test) sw.add_action_listener,
+  Cx (Menu_item_text_area_test sw.as_abutton) (Cx (Frame sw.as_window) setup_text_area_test) sw.add_action_listener,
+  Cx (Menu_item_canvas_random_test sw.as_abutton) (Cx (Frame sw.as_window) setup_canvas_random_test) sw.add_action_listener,
+  Cx (Menu_item_canvas_string_test sw.as_abutton) (Cx (Frame sw.as_window) setup_canvas_string_test) sw.add_action_listener,
+  Cx (Menu_item_named_colors_test sw.as_abutton) (Cx (Frame sw.as_window) setup_named_colors_test) sw.add_action_listener,
+  Cx (Menu_item_border_test sw.as_abutton) (Cx (Frame sw.as_window) setup_border_test) sw.add_action_listener,
+  Cx (Menu_item_scroll_pane_test sw.as_abutton) (Cx (Frame sw.as_window) setup_scroll_pane_test) sw.add_action_listener,
+  Cx (Menu_item_message_dialog_test sw.as_abutton) (Cx (Frame sw.as_window) setup_message_dialog_test) sw.add_action_listener,
+  Cx (Menu_item_confirm_dialog_test sw.as_abutton) (Cx (Frame sw.as_window) setup_confirm_dialog_test) sw.add_action_listener,
+  Cx (Menu_item_mouse_test sw.as_abutton) (Cx (Frame sw.as_window) setup_mouse_test) sw.add_action_listener,
+  Cx (Menu_item_predefined_cursor_test sw.as_abutton) (Cx (Frame sw.as_window) setup_predefined_cursor_test) sw.add_action_listener,
+  Cx (Menu_item_system_custom_cursor_test sw.as_abutton) (Cx (Frame sw.as_window) setup_system_custom_cursor_test) sw.add_action_listener,
+  Cx (Menu_item_key_test sw.as_abutton) (Cx (Frame sw.as_window) setup_key_test) sw.add_action_listener,
+  Cx (Menu_item_timer_test sw.as_abutton) (Cx (Frame sw.as_window) setup_timer_test) sw.add_action_listener,
+
+  Cx Frame sw.exit_on_frame_close$ sw.set_default_close_operation,
+  Cx (Frame sw.as_component) (300 200 sw.dimension$) sw.set_size,
+  Cx (Frame sw.as_window) (100 100 sw.in_screen$) sw.set_location,
+  Cx Frame true$ sw.set_visible
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_button_test -> <sw.listener_h> {
+  Cx sw.create_button = *B1,
+  Cx (B1 sw.as_abutton) "Button1" sw.set_text,
+  Cx sw.create_button = *B2,
+  Cx (B2 sw.as_abutton) "Button2" sw.set_text,
+
+  Cx "(event)" sw.create_label = *L_disp,
+
+  Cx 2 1 sw.create_grid_layout_panel = *P,
+  Cx (P sw.as_panel) (B1 sw.as_component) sw.add_component,
+  Cx (P sw.as_panel) (B2 sw.as_component) sw.add_component,
+
+  Cx Parent "Test button" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (P sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (L_disp sw.as_component) sw.border_layout_south$ sw.add_component,
+  Cx (Dialog sw.as_component) (200 150 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    EI "source" map.assoc >> value = (*X sw.button_obj$) sw.obj_eid$,
+    ECx L_disp ([ "[", ECx (X sw.as_abutton) sw.get_text, "] clicked" ] cstr.concat) sw.set_text
+  } sw.create_listener = *Lis,
+  Cx (B1 sw.as_abutton) Lis sw.add_action_listener,
+  Cx (B2 sw.as_abutton) Lis sw.add_action_listener,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_check_box_test -> <sw.listener_h> {
+  Cx sw.create_check_box = *CB1,
+  Cx (CB1 sw.as_abutton) "CheckBox1" sw.set_text,
+  Cx sw.create_check_box = *CB2,
+  Cx (CB2 sw.as_abutton) "CheckBox2" sw.set_text,
+  Cx sw.create_check_box = *CB3,
+  Cx (CB3 sw.as_abutton) "CheckBox3" sw.set_text,
+
+  Cx "(event)" sw.create_label = *L_disp,
+
+  Cx 3 1 sw.create_grid_layout_panel = *P,
+  Cx (P sw.as_panel) (CB1 sw.as_component) sw.add_component,
+  Cx (P sw.as_panel) (CB2 sw.as_component) sw.add_component,
+  Cx (P sw.as_panel) (CB3 sw.as_component) sw.add_component,
+
+  Cx Parent "Test check box" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (P sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (L_disp sw.as_component) sw.border_layout_south$ sw.add_component,
+  Cx (Dialog sw.as_component) (200 150 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    EI "source" map.assoc >> value = (*X sw.check_box_obj$) sw.obj_eid$,
+    ECx (X sw.as_abutton) sw.selected? >> case {
+    ; true$ -> "selected"
+    ; ** -> "unselected"
+    } = *S,
+    ECx L_disp ([ "[", ECx (X sw.as_abutton) sw.get_text, "] ", S ] cstr.concat) sw.set_text
+  } sw.create_listener = *Lis,
+  Cx (CB1 sw.as_abutton) Lis sw.add_action_listener,
+  Cx (CB2 sw.as_abutton) Lis sw.add_action_listener,
+  Cx (CB3 sw.as_abutton) Lis sw.add_action_listener,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_radio_button_test -> <sw.listener_h> {
+  Cx Parent "Test radio button" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx sw.create_radio_button = *RB1,
+  Cx (RB1 sw.as_abutton) "RadioButton1" sw.set_text,
+  Cx sw.create_radio_button = *RB2,
+  Cx (RB2 sw.as_abutton) "RadioButton2" sw.set_text,
+  Cx sw.create_radio_button = *RB3,
+  Cx (RB3 sw.as_abutton) "RadioButton3" sw.set_text,
+  Cx sw.create_button_group = *BG,
+  Cx BG RB1 sw.add_button,
+  Cx BG RB2 sw.add_button,
+  Cx BG RB3 sw.add_button,
+  Cx "(selection)" sw.create_label = *Disp,
+  Cx 3 1 sw.create_grid_layout_panel = *P,
+  Cx (P sw.as_panel) (RB1 sw.as_component) sw.add_component,
+  Cx (P sw.as_panel) (RB2 sw.as_component) sw.add_component,
+  Cx (P sw.as_panel) (RB3 sw.as_component) sw.add_component,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (P sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (Disp sw.as_component) sw.border_layout_south$ sw.add_component,
+  Cx (Dialog sw.as_component) (200 150 sw.dimension$) sw.set_size,
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    EI "source" map.assoc >> value = (*X sw.radio_button_obj$) sw.obj_eid$,
+    ECx (X sw.as_abutton) sw.selected? >> case {
+    ; true$ ->
+      ECx Disp ([ "[", ECx (X sw.as_abutton) sw.get_text, "] selected" ] cstr.concat) sw.set_text
+    ; ** ->
+    }
+  } sw.create_listener = *Lis,
+  Cx (RB1 sw.as_abutton) Lis sw.add_action_listener,
+  Cx (RB2 sw.as_abutton) Lis sw.add_action_listener,
+  Cx (RB3 sw.as_abutton) Lis sw.add_action_listener,
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_text_field_test -> <sw.listener_h> {
+  Cx sw.create_text_field = *TF,
+  Cx (TF sw.as_text_component) "(text field)" sw.set_text,
+
+  Cx Parent "Test text field" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (TF sw.as_component) sw.border_layout_north$ sw.add_component,
+  Cx (Dialog sw.as_component) (200 50 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_component) "Text field" sw.plain_message$ "Enter pressed." sw.show_message_dialog
+  } sw.create_listener = *Lis,
+  Cx TF Lis sw.add_action_listener,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_text_area_test -> <sw.listener_h> {
+  Cx sw.create_text_area = *TA,
+  Cx (TA sw.as_text_component) "(text area)" sw.set_text,
+  Cx sw.create_radio_button = *RB_no_wrap,
+  Cx (RB_no_wrap sw.as_abutton) "No wrap" sw.set_text,
+  Cx sw.create_radio_button = *RB_char_wrap,
+  Cx (RB_char_wrap sw.as_abutton) "Character wrap" sw.set_text,
+  Cx sw.create_radio_button = *RB_word_wrap,
+  Cx (RB_word_wrap sw.as_abutton) "Word wrap" sw.set_text,
+  Cx sw.create_button_group = *BG,
+  Cx BG RB_no_wrap sw.add_button,
+  Cx BG RB_char_wrap sw.add_button,
+  Cx BG RB_word_wrap sw.add_button,
+  Cx (RB_no_wrap sw.as_abutton) true$ sw.set_selected,
+
+  Cx 3 1 sw.create_grid_layout_panel = *P_sel,
+  Cx (P_sel sw.as_panel) (RB_no_wrap sw.as_component) sw.add_component,
+  Cx (P_sel sw.as_panel) (RB_char_wrap sw.as_component) sw.add_component,
+  Cx (P_sel sw.as_panel) (RB_word_wrap sw.as_component) sw.add_component,
+  Cx (P_sel sw.as_jcomponent)
+    (Cx
+      (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+      "Line wrap"
+      sw.create_titled_border >> sw.as_border)
+    sw.set_border,
+
+  Cx (RB_no_wrap sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx TA sw.no_wrap$ sw.set_line_wrap
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_char_wrap sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx TA sw.char_wrap$ sw.set_line_wrap
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_word_wrap sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx TA sw.word_wrap$ sw.set_line_wrap
+     } sw.create_listener)
+    sw.add_action_listener,
+
+  Cx Parent "Test text area" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (TA sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (P_sel sw.as_component) sw.border_layout_south$ sw.add_component,
+  Cx (Dialog sw.as_component) (200 200 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_canvas_random_test -> <sw.listener_h> {
+  Cx sw.create_canvas = *C,
+  Cx (C sw.as_jcomponent) sw.white sw.set_background,
+  Cx "(action)" sw.create_label = *L_disp,
+  Cx sw.create_button = *B_paint,
+  Cx (B_paint sw.as_abutton) "Paint (random)" sw.set_text,
+
+  Cx (B_paint sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       random_paint = (| *Action_desc, *Action_list |),
+       ECx L_disp Action_desc sw.set_text,
+       ECx C Action_list sw.set_paint_actions
+     } sw.create_listener)
+    sw.add_action_listener,
+
+  Cx sw.create_border_layout_panel = *P,
+  Cx P (C sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx P (L_disp sw.as_component) sw.border_layout_south$ sw.add_component,
+
+  Cx Parent "Canvas - random" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (P sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (B_paint sw.as_component) sw.border_layout_south$ sw.add_component,
+  Cx (Dialog sw.as_component) (350 250 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval random_paint -> <cstr <sw.paint_action list> tuple> {
+  200 = *X_max, 200 = *Y_max,  # canvas size
+
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 X_max random = *X1, 0 Y_max random = *Y1,
+    0 X_max random = *X2, 0 Y_max random = *Y2,
+    (| [ Color_name, " : draw line ", X1 Y1 xy_format, " ", X2 Y2 xy_format ] cstr.concat,
+      [ Color sw.pa_set_color$, (X1 Y1 sw.point$) (X2 Y2 sw.point$) sw.pa_draw_line$ ] |)
+  } = *Draw_line,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 (X_max 10 diff) random = *X, 0 (Y_max 10 diff) random = *Y,
+    5 (X_max X diff) random = *W, 5 (Y_max Y diff) random = *H,
+    (| [ Color_name, " : draw rect ", X Y xy_format, " ", W H wh_format ] cstr.concat,
+      [ Color sw.pa_set_color$, (X Y sw.point$) (W H sw.dimension$) sw.pa_draw_rect$ ] |)
+  } = *Draw_rect,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 (X_max 10 diff) random = *X, 0 (Y_max 10 diff) random = *Y,
+    5 (X_max X diff) random = *W, 5 (Y_max Y diff) random = *H,
+    (| [ Color_name, " : fill rect ", X Y xy_format, " ", W H wh_format ] cstr.concat,
+      [ Color sw.pa_set_color$, (X Y sw.point$) (W H sw.dimension$) sw.pa_fill_rect$ ] |)
+  } = *Fill_rect,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 X_max random = *X1, 0 Y_max random = *Y1,
+    0 X_max random = *X2, 0 Y_max random = *Y2,
+    0 X_max random = *X3, 0 Y_max random = *Y3,
+    (| [ Color_name, " : draw polyline ", X1 Y1 xy_format, " ", X2 Y2 xy_format, " ", X3 Y3 xy_format ] cstr.concat,
+      [ Color sw.pa_set_color$, [ (X1 Y1 sw.point$), (X2 Y2 sw.point$), (X3 Y3 sw.point$) ] sw.pa_draw_polyline$ ] |)
+  } = *Draw_polyline,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 X_max random = *X1, 0 Y_max random = *Y1,
+    0 X_max random = *X2, 0 Y_max random = *Y2,
+    0 X_max random = *X3, 0 Y_max random = *Y3,
+    (| [ Color_name, " : draw polygon ", X1 Y1 xy_format, " ", X2 Y2 xy_format, " ", X3 Y3 xy_format ] cstr.concat,
+      [ Color sw.pa_set_color$, [ (X1 Y1 sw.point$), (X2 Y2 sw.point$), (X3 Y3 sw.point$) ] sw.pa_draw_polygon$ ] |)
+  } = *Draw_polygon,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 X_max random = *X1, 0 Y_max random = *Y1,
+    0 X_max random = *X2, 0 Y_max random = *Y2,
+    0 X_max random = *X3, 0 Y_max random = *Y3,
+    (| [ Color_name, " : fill polygon ", X1 Y1 xy_format, " ", X2 Y2 xy_format, " ", X3 Y3 xy_format ] cstr.concat,
+      [ Color sw.pa_set_color$, [ (X1 Y1 sw.point$), (X2 Y2 sw.point$), (X3 Y3 sw.point$) ] sw.pa_fill_polygon$ ] |)
+  } = *Fill_polygon,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 (X_max 10 diff) random = *X, 0 (Y_max 10 diff) random = *Y,
+    5 (X_max X diff) random = *W, 5 (Y_max Y diff) random = *H,
+    (| [ Color_name, " : draw oval ", X Y xy_format, " ", W H wh_format ] cstr.concat,
+      [ Color sw.pa_set_color$, (X Y sw.point$) (W H sw.dimension$) sw.pa_draw_oval$ ] |)
+  } = *Draw_oval,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 (X_max 10 diff) random = *X, 0 (Y_max 10 diff) random = *Y,
+    5 (X_max X diff) random = *W, 5 (Y_max Y diff) random = *H,
+    (| [ Color_name, " : fill oval ", X Y xy_format, " ", W H wh_format ] cstr.concat,
+      [ Color sw.pa_set_color$, (X Y sw.point$) (W H sw.dimension$) sw.pa_fill_oval$ ] |)
+  } = *Fill_oval,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 (X_max 10 diff) random = *X, 0 (Y_max 10 diff) random = *Y,
+    5 (X_max X diff) random = *W, 5 (Y_max Y diff) random = *H,
+    0 340 random = *SA, SA int.format = *FSA,
+    5 (360 SA diff) random = *AA, AA int.format = *FAA,
+    (| [ Color_name, " : draw arc ", X Y xy_format, " ", W H wh_format, " ", FSA, " ", FAA ] cstr.concat,
+      [ Color sw.pa_set_color$, (X Y sw.point$) (W H sw.dimension$) SA AA sw.pa_draw_arc$ ] |)
+  } = *Draw_arc,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 (X_max 10 diff) random = *X, 0 (Y_max 10 diff) random = *Y,
+    5 (X_max X diff) random = *W, 5 (Y_max Y diff) random = *H,
+    0 340 random = *SA, SA int.format = *FSA,
+    5 (360 SA diff) random = *AA, AA int.format = *FAA,
+    (| [ Color_name, " : fill arc ", X Y xy_format, " ", W H wh_format, " ", FSA, " ", FAA ] cstr.concat,
+      [ Color sw.pa_set_color$, (X Y sw.point$) (W H sw.dimension$) SA AA sw.pa_fill_arc$ ] |)
+  } = *Fill_arc,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 (X_max 10 diff) random = *X, 0 (Y_max 10 diff) random = *Y,
+    10 (X_max X diff) random = *W, 10 (Y_max Y diff) random = *H,
+    (| [ "draw image ", X Y xy_format, " ", W H wh_format, " ", Color_name ] cstr.concat,
+      [ (_initd_ loupe_img) (X Y sw.point$) ((W H sw.dimension$) value$) (Color value$) sw.pa_draw_image$ ] |)
+  } = *Draw_image,
+  \\ <cstr <sw.paint_action list> tuple> {
+    random_color = (| *Color_name, *Color |),
+    0 (X_max 30 diff) random = *X, 20 (Y_max 10 diff) random = *Y,
+    (| [ Color_name, " : draw string ", X Y xy_format ] cstr.concat,
+      [ Color sw.pa_set_color$, "Hi, guys!" (X Y sw.point$) sw.pa_draw_string$ ] |)
+  } = *Draw_string,
+
+  [|
+    Draw_line,
+    Draw_polyline,
+    Draw_rect, Fill_rect,
+    Draw_polygon, Fill_polygon,
+    Draw_oval, Fill_oval,
+    Draw_arc, Fill_arc,
+    Draw_image,
+    Draw_string
+  |] = *Action_generators,
+
+  0 (Action_generators str.length) random = *R,
+  &(Action_generators R str.elem)
+} ;;
+
+eval random_color -> <cstr sw.color tuple> {  # named color other than white
+  [|
+    (| "black", sw.black |),
+    (| "blue", sw.blue |),
+    (| "cyan", sw.cyan |),
+    (| "gray", sw.gray |),
+    (| "dark gray", sw.dark_gray |),
+    (| "light gray", sw.light_gray |),
+    (| "green", sw.green |),
+    (| "magenta", sw.magenta |),
+    (| "orange", sw.orange |),
+    (| "pink", sw.pink |),
+    (| "red", sw.red |),
+    # (| "white", sw.white |),
+    (| "yellow", sw.yellow |)
+  |] = *Colors,
+  0 (Colors str.length) random = *R,
+  Colors R str.elem
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_canvas_string_test -> <sw.listener_h> {
+  Cx sw.create_canvas = *C,
+  Cx (C sw.as_jcomponent) sw.white sw.set_background,
+
+  Cx sw.create_text_field = *TF_text,
+  Cx (TF_text sw.as_text_component) "test text" sw.set_text,
+
+  Cx sw.create_radio_button = *RB_hleft,
+  Cx (RB_hleft sw.as_abutton) "Left" sw.set_text,
+  Cx sw.create_radio_button = *RB_hcenter,
+  Cx (RB_hcenter sw.as_abutton) "Center" sw.set_text,
+  Cx sw.create_radio_button = *RB_hright,
+  Cx (RB_hright sw.as_abutton) "Right" sw.set_text,
+  Cx sw.create_radio_button = *RB_vtop,
+  Cx (RB_vtop sw.as_abutton) "Top" sw.set_text,
+  Cx sw.create_radio_button = *RB_vcenter,
+  Cx (RB_vcenter sw.as_abutton) "Center" sw.set_text,
+  Cx sw.create_radio_button = *RB_vbottom,
+  Cx (RB_vbottom sw.as_abutton) "Bottom" sw.set_text,
+  Cx sw.create_radio_button = *RB_vfixed,
+  Cx (RB_vfixed sw.as_abutton) "Fixed baseline" sw.set_text,
+  Cx sw.create_button_group = *BG_horizontal,
+  Cx BG_horizontal RB_hleft sw.add_button,
+  Cx BG_horizontal RB_hcenter sw.add_button,
+  Cx BG_horizontal RB_hright sw.add_button,
+  Cx (RB_hcenter sw.as_abutton) true$ sw.set_selected,
+  Cx sw.create_button_group = *BG_vertical,
+  Cx BG_vertical RB_vtop sw.add_button,
+  Cx BG_vertical RB_vcenter sw.add_button,
+  Cx BG_vertical RB_vbottom sw.add_button,
+  Cx BG_vertical RB_vfixed sw.add_button,
+  Cx (RB_vcenter sw.as_abutton) true$ sw.set_selected,
+
+  Cx sw.create_button = *B_draw,
+  Cx (B_draw sw.as_abutton) "Draw" sw.set_text,
+
+  Cx (B_draw sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (TF_text sw.as_text_component) sw.get_text = *Text,
+       if {
+       ; ECx (RB_hleft sw.as_abutton) sw.selected? -> sw.horizontal_left$
+       ; ECx (RB_hcenter sw.as_abutton) sw.selected? -> sw.horizontal_center$
+       ; ECx (RB_hright sw.as_abutton) sw.selected? -> sw.horizontal_right$
+       } = *HA,
+       if {
+       ; ECx (RB_vfixed sw.as_abutton) sw.selected? ->
+         Text HA paint_string_actions_on_baseline
+       ; otherwise ->
+         if {
+         ; ECx (RB_vtop sw.as_abutton) sw.selected? -> sw.vertical_top$
+         ; ECx (RB_vcenter sw.as_abutton) sw.selected? -> sw.vertical_center$
+         ; ECx (RB_vbottom sw.as_abutton) sw.selected? -> sw.vertical_bottom$
+         } = *VA,
+         Text HA VA paint_string_actions_in_rect
+       } = *PAs,
+       ECx C [ sw.black sw.pa_set_color$ ; PAs ] sw.set_paint_actions
+     } sw.create_listener)
+    sw.add_action_listener,
+
+  Cx 3 1 sw.create_grid_layout_panel = *P_horizontal,
+  Cx (P_horizontal sw.as_panel) (RB_hleft sw.as_component) sw.add_component,
+  Cx (P_horizontal sw.as_panel) (RB_hcenter sw.as_component) sw.add_component,
+  Cx (P_horizontal sw.as_panel) (RB_hright sw.as_component) sw.add_component,
+
+  Cx 4 1 sw.create_grid_layout_panel = *P_vertical,
+  Cx (P_vertical sw.as_panel) (RB_vtop sw.as_component) sw.add_component,
+  Cx (P_vertical sw.as_panel) (RB_vcenter sw.as_component) sw.add_component,
+  Cx (P_vertical sw.as_panel) (RB_vbottom sw.as_component) sw.add_component,
+  Cx (P_vertical sw.as_panel) (RB_vfixed sw.as_component) sw.add_component,
+
+  Cx 1 2 sw.create_grid_layout_panel = *P_settings,
+  Cx (P_settings sw.as_panel) (P_horizontal sw.as_component) sw.add_component,
+  Cx (P_settings sw.as_panel) (P_vertical sw.as_component) sw.add_component,
+
+  Cx sw.create_border_layout_panel = *P_control,
+  Cx P_control (TF_text sw.as_component) sw.border_layout_north$ sw.add_component,
+  Cx P_control (P_settings sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx P_control (B_draw sw.as_component) sw.border_layout_south$ sw.add_component,
+
+  Cx sw.create_border_layout_panel = *P,
+  Cx P (C sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx P (P_control sw.as_component) sw.border_layout_south$ sw.add_component,
+
+  Cx Parent "Canvas - string" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (P sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx (Dialog sw.as_component) (350 250 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <cstr> *Text <sw.horizontal_alignment> *HA paint_string_actions_on_baseline -> <sw.paint_action list> {
+  [ sw.orange sw.pa_set_color$,
+    (50 50 sw.point$) (150 50 sw.point$) sw.pa_draw_line$,
+    (50 30 sw.point$) (50 70 sw.point$) sw.pa_draw_line$,
+    (150 30 sw.point$) (150 70 sw.point$) sw.pa_draw_line$,
+    sw.black sw.pa_set_color$,
+    Text (50 50 sw.point$) 100 HA sw.pa_draw_string2$ ]
+} ;;
+
+eval <cstr> *Text <sw.horizontal_alignment> *HA <sw.vertical_alignment> *VA paint_string_actions_in_rect -> <sw.paint_action list> {
+  [ sw.orange sw.pa_set_color$,
+    (50 30 sw.point$) (100 40 sw.dimension$) sw.pa_draw_rect$,
+    sw.black sw.pa_set_color$,
+    Text (50 30 sw.point$) (100 40 sw.dimension$) HA VA sw.pa_draw_string3$ ]
+} ;;
+
+eval <int> *Min <int> *Max random -> <int> {  # generate random int R, Min <= R < Max
+  Max Min diff = *D,
+  rand.generate (D real) prod >> int = *R,
+  Min R sum
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_named_colors_test -> <sw.listener_h> {
+  Cx "" sw.create_label = *L_display,
+  Cx (L_display sw.as_jcomponent) true$ sw.set_opaque,
+  Cx (L_display sw.as_jcomponent) sw.black sw.set_background,
+  Cx (L_display sw.as_jcomponent)
+    (Cx sw.raised_etch$ sw.create_etched_border >> sw.as_border)
+    sw.set_border,
+  
+  Cx sw.create_radio_button = *RB_black,
+  Cx (RB_black sw.as_abutton) "Black" sw.set_text,
+  Cx sw.create_radio_button = *RB_blue,
+  Cx (RB_blue sw.as_abutton) "Blue" sw.set_text,
+  Cx sw.create_radio_button = *RB_cyan,
+  Cx (RB_cyan sw.as_abutton) "Cyan" sw.set_text,
+  Cx sw.create_radio_button = *RB_gray,
+  Cx (RB_gray sw.as_abutton) "Gray" sw.set_text,
+  Cx sw.create_radio_button = *RB_dark_gray,
+  Cx (RB_dark_gray sw.as_abutton) "Dark gray" sw.set_text,
+  Cx sw.create_radio_button = *RB_light_gray,
+  Cx (RB_light_gray sw.as_abutton) "Light gray" sw.set_text,
+  Cx sw.create_radio_button = *RB_green,
+  Cx (RB_green sw.as_abutton) "Green" sw.set_text,
+  Cx sw.create_radio_button = *RB_magenta,
+  Cx (RB_magenta sw.as_abutton) "Magenta" sw.set_text,
+  Cx sw.create_radio_button = *RB_orange,
+  Cx (RB_orange sw.as_abutton) "Orange" sw.set_text,
+  Cx sw.create_radio_button = *RB_pink,
+  Cx (RB_pink sw.as_abutton) "Pink" sw.set_text,
+  Cx sw.create_radio_button = *RB_red,
+  Cx (RB_red sw.as_abutton) "Red" sw.set_text,
+  Cx sw.create_radio_button = *RB_white,
+  Cx (RB_white sw.as_abutton) "White" sw.set_text,
+  Cx sw.create_radio_button = *RB_yellow,
+  Cx (RB_yellow sw.as_abutton) "Yellow" sw.set_text,
+  Cx sw.create_button_group = *BG,
+  Cx BG RB_black sw.add_button,
+  Cx BG RB_blue sw.add_button,
+  Cx BG RB_cyan sw.add_button,
+  Cx BG RB_gray sw.add_button,
+  Cx BG RB_dark_gray sw.add_button,
+  Cx BG RB_light_gray sw.add_button,
+  Cx BG RB_green sw.add_button,
+  Cx BG RB_magenta sw.add_button,
+  Cx BG RB_orange sw.add_button,
+  Cx BG RB_pink sw.add_button,
+  Cx BG RB_red sw.add_button,
+  Cx BG RB_white sw.add_button,
+  Cx BG RB_yellow sw.add_button,
+  Cx (RB_black sw.as_abutton) true$ sw.set_selected,
+
+  Cx 7 2 sw.create_grid_layout_panel = *P_colors,
+  Cx (P_colors sw.as_panel) (RB_black sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_blue sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_cyan sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_gray sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_dark_gray sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_light_gray sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_green sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_magenta sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_orange sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_pink sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_red sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_white sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_panel) (RB_yellow sw.as_component) sw.add_component,
+  Cx (P_colors sw.as_jcomponent)
+    (Cx
+      (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+      "Color"
+      sw.create_titled_border >> sw.as_border)
+    sw.set_border,
+
+  Cx (RB_black sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.black sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_blue sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.blue sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_cyan sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.cyan sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_gray sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.gray sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_dark_gray sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.dark_gray sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_light_gray sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.light_gray sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_green sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.green sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_magenta sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.magenta sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_orange sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.orange sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_pink sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.pink sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_red sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.red sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_white sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.white sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_yellow sw.as_abutton)
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx (L_display sw.as_jcomponent) sw.yellow sw.set_background
+     } sw.create_listener)
+    sw.add_action_listener,
+
+  Cx Parent "Named colors" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (L_display sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (P_colors sw.as_component) sw.border_layout_south$ sw.add_component,
+  Cx (Dialog sw.as_component) (200 250 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_border_test -> <sw.listener_h> {
+  Cx "No border" sw.create_label = *Sample_no_border,
+  Cx "Empty border (insets = 5,5,5,5)" sw.create_label = *Sample_empty_border,
+  Cx (Sample_empty_border sw.as_jcomponent)
+    (Cx (5 5 5 5 sw.insets$) sw.create_empty_border >> sw.as_border)
+    sw.set_border,
+  Cx "Etched border (lowered)" sw.create_label = *Sample_etched_border_lowered,
+  Cx (Sample_etched_border_lowered sw.as_jcomponent)
+    (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+    sw.set_border,
+  Cx "Etched border (raised)" sw.create_label = *Sample_etched_border_raised,
+  Cx (Sample_etched_border_raised sw.as_jcomponent)
+    (Cx sw.raised_etch$ sw.create_etched_border >> sw.as_border)
+    sw.set_border,
+  Cx "Titled border on etched border" sw.create_label = *Sample_titled_border,
+  Cx (Sample_titled_border sw.as_jcomponent)
+    (Cx
+      (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+      "Title"
+      sw.create_titled_border >> sw.as_border)
+    sw.set_border,
+
+  Cx 5 1 sw.create_grid_layout_panel = *P_samples,
+  Cx (P_samples sw.as_panel) (Sample_no_border sw.as_component) sw.add_component,
+  Cx (P_samples sw.as_panel) (Sample_empty_border sw.as_component) sw.add_component,
+  Cx (P_samples sw.as_panel) (Sample_etched_border_lowered sw.as_component) sw.add_component,
+  Cx (P_samples sw.as_panel) (Sample_etched_border_raised sw.as_component) sw.add_component,
+  Cx (P_samples sw.as_panel) (Sample_titled_border sw.as_component) sw.add_component,
+
+  Cx Parent "Border" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (P_samples sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx (Dialog sw.as_component) (200 150 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_scroll_pane_test -> <sw.listener_h> {
+  Cx sw.create_scroll_pane = *SP,
+  Cx sw.create_text_area = *TA,
+  Cx (TA sw.as_text_component)
+    "abcd efgh ijkl mnop qrst uvwx yz\nabcd efgh ijkl mnop qrst uvwx yz\n"
+    sw.set_text,
+  Cx sw.create_radio_button = *RB_h_never,
+  Cx (RB_h_never sw.as_abutton) "Never" sw.set_text,
+  Cx sw.create_radio_button = *RB_h_as_needed,
+  Cx (RB_h_as_needed sw.as_abutton) "As needed" sw.set_text,
+  Cx sw.create_radio_button = *RB_h_always,
+  Cx (RB_h_always sw.as_abutton) "Always" sw.set_text,
+  Cx sw.create_button_group = *BG_h,
+  Cx BG_h RB_h_never sw.add_button,
+  Cx BG_h RB_h_as_needed sw.add_button,
+  Cx BG_h RB_h_always sw.add_button,
+  Cx (RB_h_as_needed sw.as_abutton) true$ sw.set_selected,
+  Cx sw.create_radio_button = *RB_v_never,
+  Cx (RB_v_never sw.as_abutton) "Never" sw.set_text,
+  Cx sw.create_radio_button = *RB_v_as_needed,
+  Cx (RB_v_as_needed sw.as_abutton) "As needed" sw.set_text,
+  Cx sw.create_radio_button = *RB_v_always,
+  Cx (RB_v_always sw.as_abutton) "Always" sw.set_text,
+  Cx sw.create_button_group = *BG_v,
+  Cx BG_v RB_v_never sw.add_button,
+  Cx BG_v RB_v_as_needed sw.add_button,
+  Cx BG_v RB_v_always sw.add_button,
+  Cx (RB_v_as_needed sw.as_abutton) true$ sw.set_selected,
+
+  Cx SP (TA sw.as_component) sw.add_component,
+  Cx 3 1 sw.create_grid_layout_panel = *P_h_sel,
+  Cx (P_h_sel sw.as_panel) (RB_h_never sw.as_component) sw.add_component,
+  Cx (P_h_sel sw.as_panel) (RB_h_as_needed sw.as_component) sw.add_component,
+  Cx (P_h_sel sw.as_panel) (RB_h_always sw.as_component) sw.add_component,
+  Cx (P_h_sel sw.as_jcomponent)
+    (Cx
+      (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+      "Horizontal scroll bar"
+      sw.create_titled_border >> sw.as_border)
+    sw.set_border,
+  Cx 3 1 sw.create_grid_layout_panel = *P_v_sel,
+  Cx (P_v_sel sw.as_panel) (RB_v_never sw.as_component) sw.add_component,
+  Cx (P_v_sel sw.as_panel) (RB_v_as_needed sw.as_component) sw.add_component,
+  Cx (P_v_sel sw.as_panel) (RB_v_always sw.as_component) sw.add_component,
+  Cx (P_v_sel sw.as_jcomponent)
+    (Cx
+      (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+      "Vertical scroll bar"
+      sw.create_titled_border >> sw.as_border)
+    sw.set_border,
+  Cx 1 2 sw.create_grid_layout_panel = *P_sel,
+  Cx (P_sel sw.as_panel) (P_h_sel sw.as_component) sw.add_component,
+  Cx (P_sel sw.as_panel) (P_v_sel sw.as_component) sw.add_component,
+
+  Cx (RB_h_never sw.as_abutton) 
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx SP sw.scroll_bar_never$ sw.set_horizontal_scroll_bar_policy
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_h_as_needed sw.as_abutton) 
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx SP sw.scroll_bar_as_needed$ sw.set_horizontal_scroll_bar_policy
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_h_always sw.as_abutton) 
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx SP sw.scroll_bar_always$ sw.set_horizontal_scroll_bar_policy
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_v_never sw.as_abutton) 
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx SP sw.scroll_bar_never$ sw.set_vertical_scroll_bar_policy
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_v_as_needed sw.as_abutton) 
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx SP sw.scroll_bar_as_needed$ sw.set_vertical_scroll_bar_policy
+     } sw.create_listener)
+    sw.add_action_listener,
+  Cx (RB_v_always sw.as_abutton) 
+    (\ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+       ECx SP sw.scroll_bar_always$ sw.set_vertical_scroll_bar_policy
+     } sw.create_listener)
+    sw.add_action_listener,
+
+  Cx Parent "Scroll pane" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (SP sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (P_sel sw.as_component) sw.border_layout_south$ sw.add_component,
+  Cx (Dialog sw.as_component) (300 150 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_message_dialog_test -> <sw.listener_h> {
+  Cx sw.create_radio_button = *RB_information_message,
+  Cx (RB_information_message sw.as_abutton) "Information message" sw.set_text,
+  Cx sw.create_radio_button = *RB_warning_message,
+  Cx (RB_warning_message sw.as_abutton) "Warning message" sw.set_text,
+  Cx sw.create_radio_button = *RB_error_message,
+  Cx (RB_error_message sw.as_abutton) "Error message" sw.set_text,
+  Cx sw.create_radio_button = *RB_question_message,
+  Cx (RB_question_message sw.as_abutton) "Question message" sw.set_text,
+  Cx sw.create_radio_button = *RB_plain_message,
+  Cx (RB_plain_message sw.as_abutton) "Plain message" sw.set_text,
+  Cx sw.create_button_group = *BG,
+  Cx BG RB_information_message sw.add_button,
+  Cx BG RB_warning_message sw.add_button,
+  Cx BG RB_error_message sw.add_button,
+  Cx BG RB_question_message sw.add_button,
+  Cx BG RB_plain_message sw.add_button,
+  Cx (RB_information_message sw.as_abutton) true$ sw.set_selected,
+
+  Cx sw.create_button = *B_show,
+  Cx (B_show sw.as_abutton) "Show dialog" sw.set_text,
+
+  Cx 5 1 sw.create_grid_layout_panel = *P_message_type_sel,
+  Cx (P_message_type_sel sw.as_panel) (RB_information_message sw.as_component) sw.add_component,
+  Cx (P_message_type_sel sw.as_panel) (RB_warning_message sw.as_component) sw.add_component,
+  Cx (P_message_type_sel sw.as_panel) (RB_error_message sw.as_component) sw.add_component,
+  Cx (P_message_type_sel sw.as_panel) (RB_question_message sw.as_component) sw.add_component,
+  Cx (P_message_type_sel sw.as_panel) (RB_plain_message sw.as_component) sw.add_component,
+  Cx (P_message_type_sel sw.as_jcomponent)
+    (Cx
+      (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+      "Message type"
+      sw.create_titled_border >> sw.as_border)
+    sw.set_border,
+
+  Cx Parent "Message dialog" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (P_message_type_sel sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (B_show sw.as_component) sw.border_layout_south$ sw.add_component,
+  Cx (Dialog sw.as_component) (200 150 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    if {
+    ; ECx (RB_information_message sw.as_abutton) sw.selected? -> (| sw.information_message$, "Information message" |)
+    ; ECx (RB_warning_message sw.as_abutton) sw.selected? -> (| sw.warning_message$, "Warning message" |)
+    ; ECx (RB_error_message sw.as_abutton) sw.selected? -> (| sw.error_message$, "Error message" |)
+    ; ECx (RB_question_message sw.as_abutton) sw.selected? -> (| sw.question_message$, "Question message" |)
+    ; ECx (RB_plain_message sw.as_abutton) sw.selected? -> (| sw.plain_message$, "Plain message" |)
+    } = (| *MT, *M |),
+    ECx (Dialog sw.as_component) "Test message dialog" MT M sw.show_message_dialog
+  } sw.create_listener = *Lis,
+  Cx (B_show sw.as_abutton) Lis sw.add_action_listener,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_confirm_dialog_test -> <sw.listener_h> {
+  Cx Parent "Confirm dialog" sw.application_modal$ sw.create_dialog = *Dialog,
+
+  Cx sw.create_radio_button = *RB_information_message,
+  Cx (RB_information_message sw.as_abutton) "Information message" sw.set_text,
+  Cx sw.create_radio_button = *RB_warning_message,
+  Cx (RB_warning_message sw.as_abutton) "Warning message" sw.set_text,
+  Cx sw.create_radio_button = *RB_error_message,
+  Cx (RB_error_message sw.as_abutton) "Error message" sw.set_text,
+  Cx sw.create_radio_button = *RB_question_message,
+  Cx (RB_question_message sw.as_abutton) "Question message" sw.set_text,
+  Cx sw.create_radio_button = *RB_plain_message,
+  Cx (RB_plain_message sw.as_abutton) "Plain message" sw.set_text,
+  Cx sw.create_button_group = *BG1,
+  Cx BG1 RB_information_message sw.add_button,
+  Cx BG1 RB_warning_message sw.add_button,
+  Cx BG1 RB_error_message sw.add_button,
+  Cx BG1 RB_question_message sw.add_button,
+  Cx BG1 RB_plain_message sw.add_button,
+  Cx (RB_information_message sw.as_abutton) true$ sw.set_selected,
+
+  Cx sw.create_radio_button = *RB_yes_no,
+  Cx (RB_yes_no sw.as_abutton) "Yes or No" sw.set_text,
+  Cx sw.create_radio_button = *RB_yes_no_cancel,
+  Cx (RB_yes_no_cancel sw.as_abutton) "Yes or No or Cancel" sw.set_text,
+  Cx sw.create_button_group = *BG2,
+  Cx BG2 RB_yes_no sw.add_button,
+  Cx BG2 RB_yes_no_cancel sw.add_button,
+  Cx (RB_yes_no sw.as_abutton) true$ sw.set_selected,
+
+  Cx sw.create_button = *B_show,
+  Cx (B_show sw.as_abutton) "Show dialog" sw.set_text,
+
+  Cx "" sw.create_label = *L_disp,
+
+  Cx 5 1 sw.create_grid_layout_panel = *P_message_type_sel,
+  Cx (P_message_type_sel sw.as_panel) (RB_information_message sw.as_component) sw.add_component,
+  Cx (P_message_type_sel sw.as_panel) (RB_warning_message sw.as_component) sw.add_component,
+  Cx (P_message_type_sel sw.as_panel) (RB_error_message sw.as_component) sw.add_component,
+  Cx (P_message_type_sel sw.as_panel) (RB_question_message sw.as_component) sw.add_component,
+  Cx (P_message_type_sel sw.as_panel) (RB_plain_message sw.as_component) sw.add_component,
+  Cx (P_message_type_sel sw.as_jcomponent)
+    (Cx
+      (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+      "Message type"
+      sw.create_titled_border >> sw.as_border)
+    sw.set_border,
+
+  Cx 2 1 sw.create_grid_layout_panel = *P_option_type_sel,
+  Cx (P_option_type_sel sw.as_panel) (RB_yes_no sw.as_component) sw.add_component,
+  Cx (P_option_type_sel sw.as_panel) (RB_yes_no_cancel sw.as_component) sw.add_component,
+  Cx (P_option_type_sel sw.as_jcomponent)
+    (Cx
+      (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+      "Option type"
+      sw.create_titled_border >> sw.as_border)
+    sw.set_border,
+
+  Cx 1 2 sw.create_grid_layout_panel = *P_config,
+  Cx (P_config sw.as_panel) (P_message_type_sel sw.as_component) sw.add_component,
+  Cx (P_config sw.as_panel) (P_option_type_sel sw.as_component) sw.add_component,
+
+  Cx sw.create_border_layout_panel = *P_show,
+  Cx P_show (P_config sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx P_show (B_show sw.as_component) sw.border_layout_south$ sw.add_component,
+
+  Cx sw.create_border_layout_panel = *P,
+  Cx P (P_show sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx P (L_disp sw.as_component) sw.border_layout_south$ sw.add_component,
+
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (P sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx (Dialog sw.as_component) (400 150 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    if {
+    ; ECx (RB_information_message sw.as_abutton) sw.selected? -> (| sw.information_message$, "Information message" |)
+    ; ECx (RB_warning_message sw.as_abutton) sw.selected? -> (| sw.warning_message$, "Warning message" |)
+    ; ECx (RB_error_message sw.as_abutton) sw.selected? -> (| sw.error_message$, "Error message" |)
+    ; ECx (RB_question_message sw.as_abutton) sw.selected? -> (| sw.question_message$, "Question message" |)
+    ; ECx (RB_plain_message sw.as_abutton) sw.selected? -> (| sw.plain_message$, "Plain message" |)
+    } = (| *MT, *M |),
+    if {
+    ; ECx (RB_yes_no sw.as_abutton) sw.selected? -> sw.yes_no_option$
+    ; ECx (RB_yes_no_cancel sw.as_abutton) sw.selected? -> sw.yes_no_cancel_option$
+    } = *OT,
+    ECx (Dialog sw.as_component) "Test message dialog" MT M OT sw.show_confirm_dialog >> case {
+    ; sw.confirmed_yes$ -> "YES selected."
+    ; sw.confirmed_no$ -> "NO selected."
+    ; sw.confirmed_cancel$ -> "Canceled."
+    } = *C,
+    ECx L_disp C sw.set_text
+  } sw.create_listener = *Lis,
+  Cx (B_show sw.as_abutton) Lis sw.add_action_listener,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_mouse_test -> <sw.listener_h> {
+  Cx Parent "Mouse" sw.application_modal$ sw.create_dialog = *Dialog,
+
+  Cx "Mouse listener test area" sw.create_label = *L_test1,
+  Cx (L_test1 sw.as_jcomponent) (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border) sw.set_border,
+
+  Cx "(mouse event)" sw.create_label = *L_disp1,
+  Cx "(mouse motion event)" sw.create_label = *L_disp2,
+
+  Cx 2 1 sw.create_grid_layout_panel = *P_disp,
+  Cx (P_disp sw.as_panel) (L_disp1 sw.as_component) sw.add_component,
+  Cx (P_disp sw.as_panel) (L_disp2 sw.as_component) sw.add_component,
+
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (L_test1 sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (P_disp sw.as_component) sw.border_layout_south$ sw.add_component,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    EI "x" map.assoc >> value = *X sw.int_eid$,
+    EI "y" map.assoc >> value = *Y sw.int_eid$,
+    ECx L_disp1 ([ E, " (", X int.format, ",",  Y int.format, ")" ] cstr.concat) sw.set_text
+  } sw.create_listener = *Lis1,
+  Cx (L_test1 sw.as_component) Lis1 sw.add_mouse_listener,
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    EI "x" map.assoc >> value = *X sw.int_eid$,
+    EI "y" map.assoc >> value = *Y sw.int_eid$,
+    ECx L_disp2 ([ E, " (", X int.format, ",",  Y int.format, ")" ] cstr.concat) sw.set_text
+  } sw.create_listener = *Lis2,
+  Cx (L_test1 sw.as_component) Lis2 sw.add_mouse_motion_listener,
+
+  Cx (Dialog sw.as_component) (200 150 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_predefined_cursor_test -> <sw.listener_h> {
+  Cx Parent "Predefined cursor" sw.application_modal$ sw.create_dialog = *Dialog,
+
+  Cx "*default" sw.create_label = *L_default,
+  Cx "*hand" sw.create_label = *L_hand,
+  Cx "*crosshair" sw.create_label = *L_crosshair,
+  Cx "*text" sw.create_label = *L_text,
+  Cx "*move" sw.create_label = *L_move,
+  Cx "*wait" sw.create_label = *L_wait,
+  Cx "*north-resize" sw.create_label = *L_n_resize,
+  Cx "*northeast-resize" sw.create_label = *L_ne_resize,
+  Cx "*east-resize" sw.create_label = *L_e_resize,
+  Cx "*southeast-resize" sw.create_label = *L_se_resize,
+  Cx "*south-resize" sw.create_label = *L_s_resize,
+  Cx "*southwest-resize" sw.create_label = *L_sw_resize,
+  Cx "*west-resize" sw.create_label = *L_w_resize,
+  Cx "*northwest-resize" sw.create_label = *L_nw_resize,
+
+  [ (| "*default",          sw.light_gray |),
+    (| "*hand",             sw.white      |),
+    (| "*crosshair",        sw.light_gray |),
+    (| "*text",             sw.white      |),
+    (| "*move",             sw.light_gray |),
+    (| "*wait",             sw.white      |),
+    (| "*north-resize",     sw.light_gray |),
+    (| "*northeast-resize", sw.white      |),
+    (| "*east-resize",      sw.light_gray |),
+    (| "*southeast-resize", sw.white      |),
+    (| "*south-resize",     sw.light_gray |),
+    (| "*southwest-resize", sw.white      |),
+    (| "*west-resize",      sw.light_gray |),
+    (| "*northwest-resize", sw.white      |)
+  ] = *Cursors,
+
+  Cx (Cursors list.length) 1 sw.create_grid_layout_panel = *P_cursors,
+
+  Cursors
+    \ <cstr sw.color tuple> *X -> <void> {
+      X = (| *T, *B |),
+      Cx T sw.create_label = *L,
+      Cx L sw.horizontal_center$ sw.set_horizontal_alignment,
+      Cx (L sw.as_jcomponent) true$ sw.set_opaque,
+      Cx (L sw.as_jcomponent) B sw.set_background,
+      Cx (L sw.as_component) (Cx T sw.get_cursor) sw.set_cursor,
+      Cx (P_cursors sw.as_panel) (L sw.as_component) sw.add_component
+    }
+    list.map,
+
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (P_cursors sw.as_component) sw.border_layout_center$ sw.add_component,
+
+  Cx (Dialog sw.as_component) (200 300 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_system_custom_cursor_test -> <sw.listener_h> {
+  Cx Parent "System custom cursor" sw.application_modal$ sw.create_dialog = *Dialog,
+
+  Cx "Cursor test area" sw.create_label = *L_test_area,
+  Cx L_test_area sw.horizontal_center$ sw.set_horizontal_alignment,
+  Cx (L_test_area sw.as_jcomponent)
+    (Cx sw.raised_etch$ sw.create_etched_border >> sw.as_border)
+    sw.set_border,
+
+  Cx "Enter cursor name." sw.create_label = *L_m1,
+  Cx "  example: Invalid.32x32, MoveDrop.32x32" sw.create_label = *L_m2,
+  Cx "You can find available names in jre/lib/images/cursors/cursors.properties ." sw.create_label = *L_m3,
+
+  Cx sw.create_text_field = *TF_name,
+
+  Cx sw.create_button = *B_set,
+  Cx (B_set sw.as_abutton) "Set" sw.set_text,
+
+  Cx 5 1 sw.create_grid_layout_panel = *P_setting,
+  Cx (P_setting sw.as_panel) (L_m1 sw.as_component) sw.add_component,
+  Cx (P_setting sw.as_panel) (L_m2 sw.as_component) sw.add_component,
+  Cx (P_setting sw.as_panel) (L_m3 sw.as_component) sw.add_component,
+  Cx (P_setting sw.as_panel) (TF_name sw.as_component) sw.add_component,
+  Cx (P_setting sw.as_panel) (B_set sw.as_component) sw.add_component,
+
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (L_test_area sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (P_setting sw.as_component) sw.border_layout_south$ sw.add_component,
+
+  Cx (Dialog sw.as_component) (450 200 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (TF_name sw.as_text_component) sw.get_text = *N,
+    \\ <sw.cursor_h> { ECx N sw.get_cursor } try >> case {
+    ; *C fin$ -> ECx (L_test_area sw.as_component) C sw.set_cursor
+    ; ** ->
+      ECx (Dialog sw.as_component) "System custum cursor" sw.error_message$
+        ([ "Invalid name.", "\"", N, "\"" ] cstr.concat) sw.show_message_dialog
+    }
+  } sw.create_listener = *Lis,
+
+  Cx (B_set sw.as_abutton) Lis sw.add_action_listener,
+  Cx TF_name Lis sw.add_action_listener,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_key_test -> <sw.listener_h> {
+  Cx Parent "Key" sw.application_modal$ sw.create_dialog = *Dialog,
+
+  Cx sw.create_text_area = *TA_input,
+  Cx (TA_input sw.as_jcomponent)
+    (Cx
+      (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+      "Key event capture area"
+      sw.create_titled_border >> sw.as_border)
+    sw.set_border,
+
+  Cx sw.create_text_area = *TA_events,
+
+  Cx sw.create_scroll_pane = *SP_events,
+  Cx SP_events (TA_events sw.as_component) sw.add_component,
+
+  Cx sw.create_button = *B_clear_log,
+  Cx (B_clear_log sw.as_abutton) "Clear" sw.set_text,
+
+  Cx sw.create_border_layout_panel = *P_event_log,
+  Cx P_event_log (SP_events sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx P_event_log (B_clear_log sw.as_component) sw.border_layout_south$ sw.add_component,
+  Cx (P_event_log sw.as_jcomponent)
+    (Cx
+      (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+      "Captured events"
+      sw.create_titled_border >> sw.as_border)
+    sw.set_border,
+
+  Cx 2 1 sw.create_grid_layout_panel = *P,
+  Cx (P sw.as_panel) (TA_input sw.as_component) sw.add_component,
+  Cx (P sw.as_panel) (P_event_log sw.as_component) sw.add_component,
+
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx (CP sw.as_panel) (P sw.as_component) sw.add_component,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx TA_events E sw.append,
+    E case {
+    ; "key.typed" ->
+      EI "key_char" map.assoc >> value = *C sw.char_eid$,
+      ECx TA_events [| ' ', C |] sw.append
+    ; ** ->
+      EI "key_code" map.assoc >> value = *K sw.vk_eid$,
+      ECx TA_events " "  sw.append,
+      ECx TA_events (K debug.repr) sw.append
+    },
+    ECx TA_events "\n" sw.append
+  } sw.create_listener = *Lis1,
+  Cx (TA_input sw.as_component) Lis1 sw.add_key_listener,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (TA_events sw.as_text_component) "" sw.set_text,
+    ECx (TA_input sw.as_component) sw.request_focus >> ignore
+  } sw.create_listener = *A_clear_log,
+  Cx (B_clear_log sw.as_abutton) A_clear_log sw.add_action_listener,
+
+  Cx (Dialog sw.as_component) (400 300 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_timer_test -> <sw.listener_h> {
+  Cx Parent "Timer" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx 1000 (1000 value$) sw.create_timer = *Timer,
+
+  Cx "Stop" sw.create_label = *L_disp,
+  Cx L_disp sw.horizontal_center$ sw.set_horizontal_alignment,
+
+  Cx sw.create_button = *B_start,
+  Cx (B_start sw.as_abutton) "Start" sw.set_text,
+  Cx sw.create_button = *B_stop,
+  Cx (B_stop sw.as_abutton) "Stop" sw.set_text,
+
+  Cx 1 2 sw.create_grid_layout_panel = *P_control,
+  Cx (P_control sw.as_panel) (B_start sw.as_component) sw.add_component,
+  Cx (P_control sw.as_panel) (B_stop sw.as_component) sw.add_component,
+
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (L_disp sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx CP (P_control sw.as_component) sw.border_layout_south$ sw.add_component,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    EI "action_command" map.assoc >> value = *C sw.cstr_eid$,
+    C case {
+    ; "1" -> (| "Running O-", "2" |)
+    ; ** -> (| "Running -O", "1" |)
+    } = (| *Msg, *Cmd |),
+    ECx L_disp Msg sw.set_text,
+    ECx Timer Cmd sw.set_action_command
+  } sw.create_listener = *Lis_timer,
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx Timer sw.start,
+    ECx L_disp "Start" sw.set_text
+  } sw.create_listener = *Lis_start,
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx Timer sw.stop,
+    ECx L_disp "Stop" sw.set_text
+  } sw.create_listener = *Lis_stop,
+
+  Cx Timer Lis_timer sw.add_action_listener,
+  Cx Timer "1" sw.set_action_command,
+  Cx (B_start sw.as_abutton) Lis_start sw.add_action_listener,
+  Cx (B_stop sw.as_abutton) Lis_stop sw.add_action_listener,
+
+  Cx (Dialog sw.as_component) (200 100 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <int> *X <int> *Y xy_format -> <cstr> {
+  [ "(", X int.format, ",", Y int.format, ")" ] cstr.concat
+} ;;
+
+eval <int> *W <int> *H wh_format -> <cstr> {
+  [ W int.format, "x", H int.format ] cstr.concat
+} ;;

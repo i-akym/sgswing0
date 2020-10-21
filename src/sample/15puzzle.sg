@@ -1,0 +1,614 @@
+###########################################################################
+# MIT License                                                             #
+# Copyright (c) 2020 AKIYAMA Isao                                         #
+#                                                                         #
+# Permission is hereby granted, free of charge, to any person obtaining   #
+# a copy of this software and associated documentation files (the         #
+# "Software"), to deal in the Software without restriction, including     #
+# without limitation the rights to use, copy, modify, merge, publish,     #
+# distribute, sublicense, and/or sell copies of the Software, and to      #
+# permit persons to whom the Software is furnished to do so, subject to   #
+# the following conditions:                                               #
+#                                                                         #
+# The above copyright notice and this permission notice shall be          #
+# included in all copies or substantial portions of the Software.         #
+#                                                                         #
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,         #
+# EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF      #
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  #
+# IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY    #
+# CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,    #
+# TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE       #
+# SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                  #
+###########################################################################
+
+# This is a sample program of '15-puzzle'
+# Usage: sango 15puzzle
+
+import "sango.bool" -> bool ;;
+import "sango.cstr" -> cstr ;;
+import "sango.entity" -> ent ;;
+import "sango.io" -> io ;;
+import "sango.io.stdio" -> stdio ;;
+import "sango.string" -> str ;;
+import "sango.system.runtime" -> runtime ;;
+import "sango.util.avltree" -> avl ;;
+import "sango.util.map" -> map ;;
+import "sango.util.random" -> rand ;;
+import "sgswing.swing" -> sw ;;
+
+import "sango.debug" -> debug ;;
+
+data <d> :=
+  game_d: <ent.eref>
+  frame: <sw.frame_h>
+  board_display: <sw.canvas_h>
+  block_font: <sw.font>
+  d$ ;;
+
+extend <ent.ent_d> := <game> game_d$ ;;
+
+alias type <block> := <cstr> ;;
+
+data <direction> :=
+| right$
+| left$
+| up$
+| down$ ;;
+
+# data <slide> := block: <block> direction: <direction> slide$ ;;
+
+eval place_size -> <int> { 50 } ;;
+
+eval place_dim -> <sw.dimension> { place_size place_size sw.dimension$ } ;;
+
+eval <int> *Place place_point -> <sw.point> {
+  Place 4 div = (| *Q, *R |),
+  (R place_size prod) (Q place_size prod) sw.point$
+} ;;
+
+eval <sw.point> *Place_point block_point -> <sw.point> {
+  Place_point = *X *Y sw.point$,
+  (X 1 sum) (Y 1 sum) sw.point$
+} ;;
+
+eval block_size -> <int> { place_size 2 diff } ;;
+
+eval block_dim -> <sw.dimension> {
+  block_size block_size sw.dimension$
+} ;;
+
+eval cursor_dim -> <sw.dimension> {
+  place_size 1 diff = *S,
+  S S sw.dimension$
+} ;;
+
+eval <sw.point> *Block_point left_arrow_polygon -> <sw.point list> {
+  Block_point = *X *Y sw.point$,
+  block_size = *S,
+  S 2 div = (| *M, ** |),
+  X S sum = *XS, Y S sum = *YS,
+  X M sum = *XM, Y M sum = *YM,
+  [ (XS 5 diff) (Y 5 sum) sw.point$, (X 5 sum) YM sw.point$, (XS 5 diff) (YS 5 diff) sw.point$ ]
+} ;;
+
+eval <sw.point> *Block_point right_arrow_polygon -> <sw.point list> {
+  Block_point = *X *Y sw.point$,
+  block_size = *S,
+  S 2 div = (| *M, ** |),
+  X S sum = *XS, Y S sum = *YS,
+  X M sum = *XM, Y M sum = *YM,
+  [ (X 5 sum) (Y 5 sum) sw.point$, (XS 5 diff) YM sw.point$, (X 5 sum) (YS 5 diff) sw.point$ ]
+} ;;
+
+eval <sw.point> *Block_point up_arrow_polygon -> <sw.point list> {
+  Block_point = *X *Y sw.point$,
+  block_size = *S,
+  S 2 div = (| *M, ** |),
+  X S sum = *XS, Y S sum = *YS,
+  X M sum = *XM, Y M sum = *YM,
+  [ XM (Y 5 sum) sw.point$, (X 5 sum) (YS 5 diff) sw.point$, (XS 5 diff) (YS 5 diff) sw.point$ ]
+} ;;
+
+eval <sw.point> *Block_point down_arrow_polygon -> <sw.point list> {
+  Block_point = *X *Y sw.point$,
+  block_size = *S,
+  S 2 div = (| *M, ** |),
+  X S sum = *XS, Y S sum = *YS,
+  X M sum = *XM, Y M sum = *YM,
+  [ (X 5 sum) (Y 5 sum) sw.point$, XM (YS 5 diff) sw.point$, (XS 5 diff) (Y 5 sum) sw.point$ ]
+} ;;
+
+eval board_color -> <sw.color> { %x80 %x80 %x80 sw.color } ;;
+eval cursor_color -> <sw.color> { %xE0 %xE0 %xE0 sw.color } ;;
+
+eval block_color1 -> <sw.color> { %xFF %xC0 %xC0 sw.color } ;;
+eval block_color2 -> <sw.color> { %xC0 %xC0 %xFF sw.color } ;;
+eval arrow_color1 -> <sw.color> { %xC0 %xFF %xFF %xFF sw.color } ;;
+eval arrow_color2 -> <sw.color> { %xC0 %xFF %xFF %xFF sw.color } ;;
+eval block_num_color1 -> <sw.color> { %x80 %x00 %x00 sw.color } ;;
+eval block_num_color2 -> <sw.color> { %x00 %x00 %x80 sw.color } ;;
+
+eval board_display_size -> <int> { place_size 4 prod } ;;
+
+eval board_display_dim -> <sw.dimension> {
+  board_display_size board_display_size sw.dimension$
+} ;;
+
+data <game> :=
+  board: <board>
+  display_state: <display_state>
+  game$ ;;
+
+data <board> :=
+  place_block_map: <int block avl.tree>
+  block_place_map: <block int avl.tree>
+  board$ ;;
+
+data <display_state> :=
+  cursor_: <int maybe>
+  display_state$ ;;
+
+eval read_game_d -> <game> {
+  (_initd_ game_d) ent.read = *G game_d$,
+  G
+} ;;
+
+eval <game> *G write_game_d -> <void> {
+  (_initd_ game_d) (G game_d$) ent.write >> ignore
+} ;;
+
+eval _init_ -> <d> {
+  new_game = *Game,
+  (Game game_d$) none$ ent.create_entity = *Game_eref,
+
+  sw.icx = *Cx,
+
+  Cx "15 puzzle" sw.create_frame = *Frame,
+
+  Cx sw.create_menu_bar = *Menu_bar,
+  Cx Frame Menu_bar sw.set_menu_bar,
+
+  Cx "Game" sw.create_menu = *M_game,
+  Cx Menu_bar M_game sw.add_menu,
+
+  Cx "New" sw.create_menu_item = *MI_new,
+  Cx "Exit" sw.create_menu_item = *MI_exit,
+  Cx M_game MI_new sw.add_menu_item,
+  Cx M_game MI_exit sw.add_menu_item,
+
+  Cx sw.create_canvas = *Board_display,
+  Cx (Board_display sw.as_component) (board_display_dim value$) sw.set_preferred_size,
+  Cx sw.sans_serif_font sw.bold_style$ 30 sw.create_font = *Block_font,
+
+  Cx Frame sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (Board_display sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx (Frame sw.as_window) sw.pack,
+
+  Cx (MI_new sw.as_abutton) (^new_menu_listener sw.create_listener) sw.add_action_listener,
+  Cx (MI_exit sw.as_abutton) (^exit_menu_listener sw.create_listener) sw.add_action_listener,
+  Cx (Board_display sw.as_component) (^board_mouse_listener sw.create_listener) sw.add_mouse_listener,
+  Cx (Board_display sw.as_component) (^board_mouse_listener sw.create_listener) sw.add_mouse_motion_listener,
+  Cx (Frame sw.as_window) (^frame_listener sw.create_listener) sw.add_window_listener,
+  Cx Frame sw.do_nothing_on_frame_close$ sw.set_default_close_operation,
+
+  game_d: Game_eref
+    frame: Frame
+    board_display: Board_display
+    block_font: Block_font
+    d$
+} ;;
+
+eval _main_ -> <void> {
+  sw.icx = *Cx,
+  _initd_ frame = *Frame,
+  Cx read_game_d paint_board,
+  Cx (Frame sw.as_window) (100 100 sw.in_screen$) sw.set_location,
+  Cx Frame true$ sw.set_visible
+} ;;
+
+eval <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI new_menu_listener -> <void> {
+  ECx new_game_requested
+} ;;
+
+eval <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI exit_menu_listener -> <void> {
+  ECx exit_requested
+} ;;
+
+eval <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI board_mouse_listener -> <void> {
+  E case {
+  ; "mouse.moved" ->
+    EI "x" map.assoc >> value = *X sw.int_eid$,
+    EI "y" map.assoc >> value = *Y sw.int_eid$,
+    X Y xy_to_place >> case {
+    ; *Place value$ ->
+      ECx Place show_cursor
+    ; ** ->
+      ECx hide_cursor
+    }
+  ; "mouse.exited" ->
+    ECx hide_cursor
+  ; "mouse.clicked" ->
+  ; ** ->
+    EI "x" map.assoc >> value = *X sw.int_eid$,
+    EI "y" map.assoc >> value = *Y sw.int_eid$,
+    ECx (X Y xy_to_place >> value) place_selected
+  }
+} ;;
+
+eval <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI frame_listener -> <void> {
+  E case {
+  ; "window.closing" -> ECx exit_requested
+  ; ** ->
+  }
+} ;;
+
+eval <sw.context_h> *Cx new_game_requested -> <void> {
+  read_game_d = *Game,
+  if {
+  ; Game board >> finished? -> true$
+  ; otherwise -> Cx Game confirm_new
+  } >> case {
+  ; true$ ->
+    new_game = *Game',
+    Game' write_game_d,
+    Cx Game' paint_board
+  ; ** ->
+  }
+} ;;
+
+eval <sw.context_h> *Cx exit_requested -> <void> {
+  read_game_d = *Game,
+  if {
+  ; Game board >> finished? -> true$
+  ; otherwise -> Cx Game confirm_eixt
+  } >> case {
+  ; true$ ->
+    0 0 runtime.shutdown
+  ; ** ->
+  }
+} ;;
+
+eval <sw.context_h> *Cx <game> *Game confirm_new -> <bool> {
+  Cx
+    (_initd_ frame >> sw.as_component)
+    "15 Puzzle"
+    sw.question_message$
+    "Not completed. Do you want a new game?"
+    sw.yes_no_option$
+    sw.show_confirm_dialog
+  >> case {
+  ; sw.confirmed_yes$ -> true$
+  ; ** -> false$
+  }
+} ;;
+
+eval <sw.context_h> *Cx <game> *Game confirm_eixt -> <bool> {
+  Cx
+    (_initd_ frame >> sw.as_component)
+    "15 Puzzle"
+    sw.question_message$
+    "Not completed. Do you want to exit?"
+    sw.yes_no_option$
+    sw.show_confirm_dialog
+  >> case {
+  ; sw.confirmed_yes$ -> true$
+  ; ** -> false$
+  }
+} ;;
+
+eval <sw.context_h> *Cx <int> *Place show_cursor -> <void> {
+  read_game_d = *Game,
+  Game display_state = *Display_state,
+  (Game board) Place block_exist? >> case {
+  ; true$ -> Place value$
+  ; ** -> none$
+  } = *C,
+  Display_state cursor_ >> case {
+  ; C ->  # state not changed
+  ; ** ->
+    cursor_: C :: Display_state display_state$ = *Display_state',
+    display_state: Display_state' :: Game game$ = *Game',
+    Game' write_game_d,
+    Cx Game' paint_board
+  }
+} ;;
+
+eval <sw.context_h> *Cx hide_cursor -> <void> {
+  read_game_d = *Game,
+  Game display_state = *Display_state,
+  Display_state cursor_ >> case {
+  ; none$ ->
+  ; ** ->
+    cursor_: none$ :: Display_state display_state$ = *Display_state',
+    display_state: Display_state' :: Game game$ = *Game',
+    Game' write_game_d,
+    Cx Game' paint_board
+  }
+} ;;
+
+eval <sw.context_h> *Cx <int> *Place place_selected -> <void> {
+  read_game_d = *Game,
+  Game board = *Board,
+  Game display_state = *Display_state,
+  Board Place block_exist? >> case {
+  ; true$ ->
+    Board place_block_map = *BP_map,
+    ((Board block_place_map) "" avl.assoc >> value) slidable_map = *Slidable_map,
+    Slidable_map Place avl.assoc >> case {
+    ; *Dir value$ ->
+      Board Place Dir slide = *Board',
+      board: Board' :: Game game$ = *Game',
+      Game' write_game_d,
+      Cx Game' paint_board
+    ; ** ->
+    }
+  ; ** ->
+  }
+} ;;
+
+eval <int> *X <int> *Y xy_to_place -> <int maybe> {
+  if {
+  ; [ X ge0?, X board_display_size lt?, Y ge0?, Y board_display_size lt? ] bool.and ->
+    X place_size div = (| *I, ** |),
+    Y place_size div = (| *J, ** |),
+    ((J 4 prod) I sum) value$
+  ; otherwise -> none$
+  }
+} ;;
+
+eval <board> *Board <int> *Place block_exist? -> <bool> {
+  (Board place_block_map) Place avl.assoc >> value >> case {
+  ; "" -> false$
+  ; ** -> true$
+  }
+} ;;
+
+eval <sw.context_h> *Cx <game> *Game paint_board -> <void> {
+  Game board >> finished? >> case {
+  ; true$ -> Cx Game block_color1 arrow_color1 block_num_color1 paint_board1
+  ; ** -> Cx Game block_color2 arrow_color2 block_num_color2 paint_board1
+  }
+} ;;
+
+eval <sw.context_h> *Cx <game> *Game
+    <sw.color> *Block_color <sw.color> *Arrow_color <sw.color> *Block_num_color paint_board1 -> <void> {
+  Game board = *Board,
+  Board place_block_map = *BP_map,
+  Game display_state = *Display_state,
+  ((Board block_place_map) "" avl.assoc >> value) slidable_map = *Slidable_map,
+  Display_state cursor_ >> case {
+  ; *Place value$ ->
+    [ cursor_color sw.pa_set_color$, (Place place_point) cursor_dim sw.pa_draw_rect$ ]
+  ; ** -> []
+  } = *PAs,
+  0 PAs &\ <int> *P <sw.paint_action list> *L -> <sw.paint_action list> {
+    P case {
+    ; 16 -> L
+    ; ** || Board P block_exist? ->
+      P place_point >> block_point = *Block_point,
+      [ Block_num_color sw.pa_set_color$,
+        (BP_map P avl.assoc >> value) Block_point block_dim
+          sw.horizontal_center$ sw.vertical_center$ sw.pa_draw_string3$
+        ; L ] = *L',
+      Slidable_map P avl.assoc >> case {
+      ; *D value$ ->
+        [ Arrow_color sw.pa_set_color$, (Block_point D arrow_polygon) sw.pa_fill_polygon$ ; L' ]
+      ; ** -> L'
+      } = *L'',
+      [ Block_color sw.pa_set_color$,
+        Block_point block_dim sw.pa_fill_rect$ ; L'' ] = *L''',
+      (P inc) L''' &&
+    ; ** -> (P inc) L &&
+    }
+  } = *PAs',
+  [ board_color sw.pa_set_color$, (0 0 sw.point$) board_display_dim sw.pa_fill_rect$,
+    (_initd_ block_font) sw.pa_set_font$ ; PAs' ] = *PAs'',
+  Cx (_initd_ board_display) PAs'' sw.set_paint_actions
+} ;;
+
+eval <sw.point> *Block_point <direction> *Dir arrow_polygon -> <sw.point list> {
+  Dir case {
+  ; left$ -> Block_point left_arrow_polygon
+  ; right$ -> Block_point right_arrow_polygon
+  ; up$ -> Block_point up_arrow_polygon
+  ; down$ -> Block_point down_arrow_polygon
+  }
+} ;;
+
+eval new_game -> <game> {
+  new_board = *Board,
+  cursor_: none$
+    display_state$ = *Display_state,
+  board: Board
+    display_state: Display_state
+    game$
+} ;;
+
+eval new_board -> <board> {
+  empty_board = *B0,
+  B0 0 "1" put_block = *B1,
+  B1 1 "2" put_block = *B2,
+  B2 2 "3" put_block = *B3,
+  B3 3 "4" put_block = *B4,
+  B4 4 "5" put_block = *B5,
+  B5 5 "6" put_block = *B6,
+  B6 6 "7" put_block = *B7,
+  B7 7 "8" put_block = *B8,
+  B8 8 "9" put_block = *B9,
+  B9 9 "10" put_block = *B10,
+  B10 10 "11" put_block = *B11,
+  B11 11 "12" put_block = *B12,
+  B12 12 "13" put_block = *B13,
+  B13 13 "14" put_block = *B14,
+  B14 14 "15" put_block = *B15,
+  B15 15 "" put_block = *B16,
+  # shuffle
+  100 B16 &\ <int> *I <board> *B -> <board> {
+    I case {
+    ; 0 -> B
+    ; ** ->
+      B "" block_place = *V,
+      (V slidables) (rand.generate 6.0 prod >> int) str.elem = (| *P, **, *F |),
+      (I dec) (B P F slide_seq) &&
+    }
+  }
+} ;;
+
+eval empty_board -> <board> {
+  place_block_map: (int_ord_fs avl.new_tree)
+    block_place_map: (cstr.ord_fs avl.new_tree)
+    board$
+} ;;
+
+eval <board> *Board <int> *Place <block> *Block put_block -> <board> {
+  Board place_block_map = *Mpb,
+  Board block_place_map = *Mbp,
+  place_block_map: (Mpb Place Block avl.add)
+    block_place_map: (Mbp Block Place avl.add)
+    board$
+} ;;
+
+eval <board> *Board <int> *Place block_at -> <block> {
+  (Board place_block_map) Place avl.assoc >> value
+} ;;
+
+eval <board> *Board <block> *Block block_place -> <int> {
+  (Board block_place_map) Block avl.assoc >> value
+} ;;
+
+eval <int> *Place left_place -> <int maybe> {
+  Place case {
+  ; 0 | 4 | 8 | 12 -> none$
+  ; ** -> (Place dec) value$
+  }
+} ;;
+
+eval <int> *Place right_place -> <int maybe> {
+  Place case {
+  ; 3 | 7 | 11 | 15 -> none$
+  ; ** -> (Place inc) value$
+  }
+} ;;
+
+eval <int> *Place up_place -> <int maybe> {
+  Place case {
+  ; 0 | 1 | 2 | 3 -> none$
+  ; ** -> (Place 4 diff) value$
+  }
+} ;;
+
+eval <int> *Place down_place -> <int maybe> {
+  Place case {
+  ; 12 | 13 | 14 | 15 -> none$
+  ; ** -> (Place 4 sum) value$
+  }
+} ;;
+
+eval <int> *Place slidables -> <<int <direction> <int <int maybe> fun> tuple> string> {
+  Place case {
+  ; 0 -> 
+    [| (| 1, left$, ^left_place |), (| 2, left$, ^left_place |), (| 3, left$, ^left_place |),
+      (| 4, up$, ^up_place |), (| 8, up$, ^up_place |), (| 12, up$, ^up_place |) |]
+  ; 1 -> 
+    [| (| 0, right$, ^right_place |), (| 2, left$, ^left_place |), (| 3, left$, ^left_place |),
+      (| 5, up$, ^up_place |), (| 9, up$, ^up_place |), (| 13, up$, ^up_place |) |]
+  ; 2 -> 
+    [| (| 0, right$, ^right_place |), (| 1, right$, ^right_place |), (| 3, left$, ^left_place |),
+      (| 6, up$, ^up_place |), (| 10, up$, ^up_place |), (| 14, up$, ^up_place |) |]
+  ; 3 -> 
+    [| (| 0, right$, ^right_place |), (| 1, right$, ^right_place |), (| 2, right$, ^right_place |),
+      (| 7, up$, ^up_place |), (| 11, up$, ^up_place |), (| 15, up$, ^up_place |) |]
+  ; 4 -> 
+    [| (| 5, left$, ^left_place |), (| 6, left$, ^left_place |), (| 7, left$, ^left_place |),
+      (| 0, down$, ^down_place |), (| 8, up$, ^up_place |), (| 12, up$, ^up_place |) |]
+  ; 5 -> 
+    [| (| 4, right$, ^right_place |), (| 6, left$, ^left_place |), (| 7, left$, ^left_place |),
+      (| 1, down$, ^down_place |), (| 9, up$, ^up_place |), (| 13, up$, ^up_place |) |]
+  ; 6 -> 
+    [| (| 4, right$, ^right_place |), (| 5, right$, ^right_place |), (| 7, left$, ^left_place |),
+      (| 2, down$, ^down_place |), (| 10, up$, ^up_place |), (| 14, up$, ^up_place |) |]
+  ; 7 -> 
+    [| (| 4, right$, ^right_place |), (| 5, right$, ^right_place |), (| 6, right$, ^right_place |),
+      (| 3, down$, ^down_place |), (| 11, up$, ^up_place |), (| 15, up$, ^up_place |) |]
+  ; 8 -> 
+    [| (| 9, left$, ^left_place |), (| 10, left$, ^left_place |), (| 11, left$, ^left_place |),
+      (| 0, down$, ^down_place |), (| 4, down$, ^down_place |), (| 12, up$, ^up_place |) |]
+  ; 9 -> 
+    [| (| 8, right$, ^right_place |), (| 10, left$, ^left_place |), (| 11, left$, ^left_place |),
+      (| 1, down$, ^down_place |), (| 5, down$, ^down_place |), (| 13, up$, ^up_place |) |]
+  ; 10 -> 
+    [| (| 8, right$, ^right_place |), (| 9, right$, ^right_place |), (| 11, left$, ^left_place |),
+      (| 2, down$, ^down_place |), (| 6, down$, ^down_place |), (| 14, up$, ^up_place |) |]
+  ; 11 -> 
+    [| (| 8, right$, ^right_place |), (| 9, right$, ^right_place |), (| 10, right$, ^right_place |),
+      (| 3, down$, ^down_place |), (| 7, down$, ^down_place |), (| 15, up$, ^up_place |) |]
+  ; 12 -> 
+    [| (| 13, left$, ^left_place |), (| 14, left$, ^left_place |), (| 15, left$, ^left_place |),
+      (| 0, down$, ^down_place |), (| 4, down$, ^down_place |), (| 8, down$, ^down_place |) |]
+  ; 13 -> 
+    [| (| 12, right$, ^right_place |), (| 14, left$, ^left_place |), (| 15, left$, ^left_place |),
+      (| 1, down$, ^down_place |), (| 5, down$, ^down_place |), (| 9, down$, ^down_place |) |]
+  ; 14 -> 
+    [| (| 12, right$, ^right_place |), (| 13, right$, ^right_place |), (| 15, left$, ^left_place |),
+      (| 2, down$, ^down_place |), (| 6, down$, ^down_place |), (| 10, down$, ^down_place |) |]
+  ; 15 -> 
+    [| (| 12, right$, ^right_place |), (| 13, right$, ^right_place |), (| 14, right$, ^right_place |),
+      (| 3, down$, ^down_place |), (| 7, down$, ^down_place |), (| 11, down$, ^down_place |) |]
+  }
+} ;;
+
+eval <int> *Place slidable_map -> <int direction avl.tree> {
+  Place slidables = [| *S1, *S2, *S3, *S4, *S5, *S6 |],
+  int_ord_fs avl.new_tree = *T0,
+  S1 = (| *P1, *D1, ** |),
+  T0 P1 D1 avl.add = *T1,
+  S2 = (| *P2, *D2, ** |),
+  T1 P2 D2 avl.add = *T2,
+  S3 = (| *P3, *D3, ** |),
+  T2 P3 D3 avl.add = *T3,
+  S4 = (| *P4, *D4, ** |),
+  T3 P4 D4 avl.add = *T4,
+  S5 = (| *P5, *D5, ** |),
+  T4 P5 D5 avl.add = *T5,
+  S6 = (| *P6, *D6, ** |),
+  T5 P6 D6 avl.add
+} ;;
+
+eval <board> *Board <int> *Place <direction> *Dir slide -> <board> {
+  Dir >> case {
+  ; left$ -> ^left_place
+  ; right$ -> ^right_place
+  ; up$ -> ^up_place
+  ; down$ -> ^down_place
+  } = *Forward,
+  Board Place Forward slide_seq
+} ;;
+
+eval <board> *Board <int> *Place <int <int maybe> fun> *Forward slide_seq -> <board> {
+  Board Place block_at = *Block,
+  Block case {
+  ; "" -> Board
+  ; ** ->
+    Place &Forward >> case {
+    ; *Q value$ ->
+      Board Q Forward && = *Board',
+      Board' Q block_at >> case {
+      ; "" -> (Board' Q Block put_block) Place "" put_block
+      ; ** -> Board'
+      }
+    ; ** -> Board
+    }
+  }
+} ;;
+
+eval <board> *Board finished? -> <bool> {
+  [ Board 0 block_at, Board 1 block_at, Board 2 block_at, Board 3 block_at,
+    Board 4 block_at, Board 5 block_at, Board 6 block_at, Board 7 block_at,
+    Board 8 block_at, Board 9 block_at, Board 10 block_at, Board 11 block_at,
+    Board 12 block_at, Board 13 block_at, Board 14 block_at, Board 15 block_at ] case {
+  ; [ "1", "2", "3", "4", "5", "6", "7", "8",
+      "9", "10", "11", "12", "13", "14", "15", "" ] -> true$
+  ; ** -> false$
+  }
+} ;;
