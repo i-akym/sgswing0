@@ -7,13 +7,14 @@
 MIT License
 
 ## REQUIREMENTS
+Sango 1.1 or higher  
 Java 1.8 or higher
 
 ## DOCUMENTS
-src/doc/doc*.html
+src/doc/*
 
 ## SAMPLE IMAGES
-(coming soon)
+![Life game](image/lifegame.png "Life game")
 
 ## SAMPLE CODE
 (coming soon)
