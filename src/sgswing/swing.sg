@@ -107,7 +107,8 @@ data <swing_obj> @public :=
 | <text_area_h> text_area_obj$
 | <plain_document_h> plain_document_obj$
 | <cursor_h> cursor_obj$
-| <timer_h> timer_obj$ ;;
+| <timer_h> timer_obj$
+| <file_chooser_h> file_chooser_obj$ ;;
 
 
 # -- abstract component : java.awt.Component --
@@ -1351,6 +1352,69 @@ eval <context_h> *Cx <void result_sender> *Ret <timer_h> *Timer timer_impl_start
 eval <context_h> *Cx <void result_sender> *Ret <timer_h> *Timer timer_impl_stop -> <void> @native ;;
 
 
+# -- file chooser : javax.swing.JFileChooser --
+
+data <file_chooser_h> @opaque := @native ;;
+
+data <file_chooser_selection_mode> @public :=
+| file_chooser_files_only$
+| file_chooser_directories_only$
+| file_chooser_files_and_directories$ ;;
+
+data <file_chooser_res> @public :=
+| file_chooser_approved$
+| file_chooser_canceled$
+| file_chooser_error$ ;;
+
+eval <swing_obj> *Obj file_chooser_h @public -> <file_chooser_h maybe> {
+  Obj case {
+  ; *File_chooser_h file_chooser_obj$ -> File_chooser_h value$
+  ; ** -> none$
+  }
+} ;;
+
+eval <file_chooser_h> *File_chooser file_chooser_as_component | as_component @public -> <a_component_h> @native ;;
+eval <file_chooser_h> *File_chooser file_chooser_as_jcomponent | as_jcomponent @public -> <a_jcomponent_h> @native ;;
+
+eval <context_h> *Cx create_file_chooser @public -> <file_chooser_h> {
+  Cx create_file_chooser_impl
+} ;;
+
+eval <context_h> *Cx <file_chooser_h> *File_chooser <cstr> *Text file_chooser_set_approve_button_text | set_approve_button_text @public -> <void> {
+  Cx File_chooser Text ^file_chooser_set_approve_button_text_impl call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <file_chooser_h> *File_chooser <a_jcomponent_h maybe> *Comp_ file_chooser_set_accessory | set_accessory @public -> <void> {
+  Cx File_chooser Comp_ ^file_chooser_set_accessory_impl call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <file_chooser_h> *File_chooser <file_chooser_selection_mode> *Mode file_chooser_set_file_selection_mode | set_file_selection_mode @public -> <void> {
+  Cx File_chooser Mode ^file_chooser_set_file_selection_mode_impl call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <file_chooser_h> *File_chooser <bool> *Sw file_chooser_set_multi_selection_enabled | set_multi_selection_enabled @public -> <void> {
+  Cx File_chooser Sw ^file_chooser_set_multi_selection_enabled_impl call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <file_chooser_h> *File_chooser <a_component_h> *Owner <cstr> *Title file_chooser_show_dialog | show_dialog @public -> <file_chooser_res> {
+  Cx File_chooser Owner Title ^file_chooser_show_dialog_impl call_impl_3_file_chooser_res
+} ;;
+
+eval <context_h> *Cx <file_chooser_h> *File_chooser file_chooser_get_selected_files | get_selected_files @public -> <cstr list> {
+  Cx File_chooser ^file_chooser_get_selected_files_impl call_impl_1_cstr_list
+} ;;
+
+# bridge to Swing
+
+eval <context_h> *Cx create_file_chooser_impl -> <file_chooser_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <cstr> *Text file_chooser_set_approve_button_text_impl -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <a_jcomponent_h maybe> *Comp_ file_chooser_set_accessory_impl -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <file_chooser_selection_mode> *Mode file_chooser_set_file_selection_mode_impl -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <bool> *Sw file_chooser_set_multi_selection_enabled_impl -> <void> @native ;;
+eval <context_h> *Cx <file_chooser_res result_sender> *Ret <file_chooser_h> *File_chooser <a_component_h> *Owner <cstr> *Title file_chooser_show_dialog_impl -> <void> @native ;;
+eval <context_h> *Cx <<cstr list> result_sender> *Ret <file_chooser_h> *File_chooser file_chooser_get_selected_files_impl -> <void> @native ;;
+
+
 # -- color --
 
 data <color> @protected :=
@@ -1550,7 +1614,9 @@ extend <act.msg> :=
 | <bool result> bool_res$
 | <int result> int_res$
 | <cstr result> cstr_res$
+| <<cstr list> result> cstr_list_res$
 | <confirmed result> confirmed_res$
+| <file_chooser_res result> file_chooser_res_res$
 | <a_panel_h result> a_panel_res$
 | <cursor_h result> cursor_res$
 | <a_document_h result> a_document_res$
@@ -1581,6 +1647,11 @@ eval <context_h> *Cx <*A> *Param1 <context_h <cstr result_sender> A void fun> *N
   \ <cstr result_sender> *RS -> <void> { Cx RS Param1 &Native_impl } call_impl_n_cstr
 } ;;
 
+# 1 param -> cstr list
+eval <context_h> *Cx <*A> *Param1 <context_h <<cstr list> result_sender> A void fun> *Native_impl call_impl_1_cstr_list -> <cstr list> {
+  \ <<cstr list> result_sender> *RS -> <void> { Cx RS Param1 &Native_impl } call_impl_n_cstr_list
+} ;;
+
 # 1 param -> a_panel_h
 eval <context_h> *Cx <*A> *Param1 <context_h <a_panel_h result_sender> A void fun> *Native_impl call_impl_1_a_panel_h -> <a_panel_h> {
   \ <a_panel_h result_sender> *RS -> <void> { Cx RS Param1 &Native_impl } call_impl_n_a_panel_h
@@ -1609,6 +1680,11 @@ eval <context_h> *Cx <*A> *Param1 <*B> *Param2 <*C> *Param3 <context_h <void res
 # 3 params -> cstr
 eval <context_h> *Cx <*A> *Param1 <*B> *Param2 <*C> *Param3 <context_h <cstr result_sender> A B C void fun> *Native_impl call_impl_3_cstr -> <cstr> {
   \ <cstr result_sender> *RS -> <void> { Cx RS Param1 Param2 Param3 &Native_impl } call_impl_n_cstr
+} ;;
+
+# 3 params -> file_chooser_res
+eval <context_h> *Cx <*A> *Param1 <*B> *Param2 <*C> *Param3 <context_h <file_chooser_res result_sender> A B C void fun> *Native_impl call_impl_3_file_chooser_res -> <file_chooser_res> {
+  \ <file_chooser_res result_sender> *RS -> <void> { Cx RS Param1 Param2 Param3 &Native_impl } call_impl_n_file_chooser_res
 } ;;
 
 # 4 params -> void
@@ -1653,11 +1729,27 @@ eval <<cstr result_sender> void fun> *Action call_impl_n_cstr -> <cstr> {
     call_impl_n_t
 } ;;
 
+# n params -> cstr list
+eval <<<cstr list> result_sender> void fun> *Action call_impl_n_cstr_list -> <cstr list> {
+  Action
+    \ <<cstr list> result> *Res -> <act.msg+> { Res cstr_list_res$ }
+    \ <act.msg+> *Msg -> <<cstr list> result> { Msg = *R cstr_list_res$, R }
+    call_impl_n_t
+} ;;
+
 # n params -> confirmed
 eval <<confirmed result_sender> void fun> *Action call_impl_n_confirmed -> <confirmed> {
   Action
     \ <confirmed result> *Res -> <act.msg+> { Res confirmed_res$ }
     \ <act.msg+> *Msg -> <confirmed result> { Msg = *R confirmed_res$, R }
+    call_impl_n_t
+} ;;
+
+# n params -> file_chooser_res
+eval <<file_chooser_res result_sender> void fun> *Action call_impl_n_file_chooser_res -> <file_chooser_res> {
+  Action
+    \ <file_chooser_res result> *Res -> <act.msg+> { Res file_chooser_res_res$ }
+    \ <act.msg+> *Msg -> <file_chooser_res result> { Msg = *R file_chooser_res_res$, R }
     call_impl_n_t
 } ;;
 

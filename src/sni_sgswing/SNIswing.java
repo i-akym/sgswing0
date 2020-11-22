@@ -62,6 +62,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JDialog;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -3672,6 +3673,193 @@ public class SNIswing {
 
     public RType.Sig getTsig() {
       return RType.createTsig(MOD_NAME, "timer_h", 0);
+    }
+
+    public Cstr debugReprOfContents() {
+      return new Cstr(this.toString());
+    }
+  }
+
+
+// Swing object - file chooser
+
+  public void sni_file_chooser_as_component(RNativeImplHelper helper, RClosureItem self, RObjItem fileChooser) {
+    helper.setReturnValue(((FileChooserHItem)fileChooser).impl.getAComponentImplAdapter().aComponentHItem);
+  }
+
+  public void sni_file_chooser_as_jcomponent(RNativeImplHelper helper, RClosureItem self, RObjItem fileChooser) {
+    helper.setReturnValue(((FileChooserHItem)fileChooser).impl.getAJComponentImplAdapter().aJComponentHItem);
+  }
+
+  public void sni_create_file_chooser_impl(RNativeImplHelper helper, RClosureItem self, RObjItem cx) {
+    helper.setReturnValue(this.createFileChooserImpl());
+  }
+
+  public void sni_file_chooser_set_approve_button_text_impl(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser, RObjItem text) {
+    FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
+    String t = helper.arrayItemToCstr((RArrayItem)text).toJavaString();
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        i.setApproveButtonText(t);
+        return SNIswing.this.getClientHelper().getVoidItem();
+      }
+    }));
+  }
+
+  public void sni_file_chooser_set_accessory_impl(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser, RObjItem compMaybe) {
+    FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
+    RObjItem comp = getValueOfMaybeItem(compMaybe);
+    JComponent c = (comp != null)? ((AJComponentHItem)comp).impl.getZJComponent(): null;
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        i.setAccessory(c);
+        return SNIswing.this.getClientHelper().getVoidItem();
+      }
+    }));
+  }
+
+  public void sni_file_chooser_set_file_selection_mode_impl(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser, RObjItem mode) {
+    FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
+    RStructItem m = (RStructItem)mode;
+    RDataConstr dc = m.getDataConstr();
+    Cstr modName = dc.getModName();
+    if (!modName.equals(new Cstr("sgswing.swing"))) {
+      throw new IllegalArgumentException("Not a mode item.");
+    }
+    String mn = dc.getName();
+    int v = 0;
+    if (mn.equals("file_chooser_files_only$")) {
+      v = JFileChooser.FILES_ONLY;
+    } else if (mn.equals("file_chooser_directories_only$")) {
+      v = JFileChooser.DIRECTORIES_ONLY;
+    } else if (mn.equals("file_chooser_files_and_directories$")) {
+      v = JFileChooser.FILES_AND_DIRECTORIES;
+    } else {
+      throw new IllegalArgumentException("Not a file_chooser_selection_mode item.");
+    }
+    final int vv = v;
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        i.setFileSelectionMode(vv);
+        return SNIswing.this.getClientHelper().getVoidItem();
+      }
+    }));
+  }
+
+  public void sni_file_chooser_set_multi_selection_enabled_impl(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser, RObjItem sw) {
+    FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
+    boolean  b = helper.boolItemToBoolean((RStructItem)sw);
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        i.setMultiSelectionEnabled(b);
+        return SNIswing.this.getClientHelper().getVoidItem();
+      }
+    }));
+  }
+
+  public void sni_file_chooser_show_dialog_impl(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser, RObjItem owner, RObjItem title) {
+    FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
+    Component o = ((AComponentHItem)owner).impl.getZComponent();
+    String t = helper.arrayItemToCstr((RArrayItem)title).toJavaString();
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        i.setDialogTitle(t);
+        int r = i.showDialog(o, i.getApproveButtonText());
+        RClientHelper ch = SNIswing.this.getClientHelper();
+        RObjItem sel;
+        switch (r) {
+        case JFileChooser.APPROVE_OPTION:
+          sel = ch.getStructItem(helper.getDataConstr(MOD_NAME, "file_chooser_approved$"), new RObjItem[0]);
+          break;
+        case JFileChooser.CANCEL_OPTION:
+          sel = ch.getStructItem(helper.getDataConstr(MOD_NAME, "file_chooser_canceled$"), new RObjItem[0]);
+          break;
+        default:
+          sel = ch.getStructItem(helper.getDataConstr(MOD_NAME, "file_chooser_error$"), new RObjItem[0]);
+          break;
+        }
+        return sel;
+      }
+    }));
+  }
+
+  public void sni_file_chooser_get_selected_files_impl(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser) {
+    FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        RClientHelper ch = SNIswing.this.getClientHelper();
+        File[] fs;
+        if (i.isMultiSelectionEnabled()) {
+          fs = i.getSelectedFiles();
+          fs = (fs != null)? fs: new File[0];
+        } else {
+          File f = i.getSelectedFile();
+          fs = (f != null)?  new File[] { f }: new File[0];
+        }
+        RListItem L = ch.getListNilItem();
+        for (int j = fs.length - 1; j >= 0; j--) {
+          RListItem.Cell c = ch.createListCellItem();
+          c.head = ch.cstrToArrayItem(new Cstr(fs[j].getAbsolutePath()));
+          c.tail = L;
+          L = c;
+        }
+        return L;
+      }
+    }));
+  }
+
+// implementation
+
+  FileChooserHItem createFileChooserImpl() {
+    RClientHelper ch = this.getClientHelper();
+    FileChooserImpl impl = new FileChooserImpl();
+    FileChooserHItem h = new FileChooserHItem(impl);
+    RDataConstr dc = ch.getDataConstr(MOD_NAME, "file_chooser_obj$");
+    RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
+    impl.implAdapter = new AJComponentImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.init();
+    return h;
+  }
+
+  class FileChooserImpl extends JFileChooser implements AJComponentImpl {
+    AJComponentImplAdapter implAdapter;
+    ActionEventMgr actionEventMgr;
+
+    FileChooserImpl() {
+      super();
+      this.actionEventMgr = new ActionEventMgr(this);
+      this.addActionListener(this.actionEventMgr);
+    }
+
+    public SwingObjAdapter getSwingObjAdapter() { return this.implAdapter; }
+    public Component getZComponent() { return this; }
+    public AComponentImplAdapter getAComponentImplAdapter() { return this.implAdapter; }
+    public JComponent getZJComponent() { return this; }
+    public AJComponentImplAdapter getAJComponentImplAdapter() { return this.implAdapter; }
+
+    void installActionListener(ListenerHItem L) {
+      this.actionEventMgr.installListener(L);
+    }
+
+    void uninstallActionListener(ListenerHItem L) {
+      this.actionEventMgr.uninstallListener(L);
+    }
+  }
+
+  public class FileChooserHItem extends RObjItem {
+    FileChooserImpl impl;
+
+    FileChooserHItem(FileChooserImpl i) {
+      super(SNIswing.this.theEngine);
+      this.impl = i;
+    }
+
+    public boolean objEquals(RFrame frame, RObjItem item) {
+      return item == this;
+    }
+
+    public RType.Sig getTsig() {
+      return RType.createTsig(MOD_NAME, "file_chooser_h", 0);
     }
 
     public Cstr debugReprOfContents() {
