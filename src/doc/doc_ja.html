@@ -95,6 +95,7 @@ kbd {
   <a href="#4.9">4.9. その他</a>
     <a href="#4.9.1">4.9.1. カーソル</a>
     <a href="#4.9.2">4.9.2. タイマ</a>
+    <a href="#4.9.3">4.9.3. ファイル選択ツール</a>
 <a href="#5">5. Swingオブジェクト以外のデータ・関数</a>
   <a href="#5.1">5.1. 例外</a>
   <a href="#5.2">5.2. コンテキスト</a>
@@ -376,7 +377,8 @@ Swingとの対応，変換可能な基底クラスのハンドルについては
 | &lt;text_area_h&gt; text_area_obj$
 | &lt;plain_document_h&gt; plain_document_obj$
 | &lt;cursor_h&gt; cursor_obj$
-| &lt;timer_h&gt; timer_obj$ ;;</code></td></tr></table>
+| &lt;timer_h&gt; timer_obj$
+| &lt;file_chooser_h&gt; file_chooser_obj$ ;;</code></td></tr></table>
 <p>Swingオブジェクトへのハンドルを表します。
 SgSwingのデータ（型）に振り分けるために使用します。</p>
 
@@ -1399,6 +1401,58 @@ eval &lt;text_area_h&gt; *Text_area text_area_as_text_component | as_text_compon
 
 <table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;timer_h&gt; *Timer timer_stop | stop @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
 <p>タイマを停止します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.9.3">4.9.3. ファイル選択ツール</h3>
+<p>ファイルを選択するツールです。
+通常はダイアログとして表示させますが，部品として使うこともできます。
+実体は，<code>javax.swing.JFileChooser</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;file_chooser_h&gt; @opaque ;;</code></td></tr></table>
+<p>ファイル選択ツールへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;file_chooser_selection_mode&gt; @public :=
+| file_chooser_files_only$
+| file_chooser_directories_only$
+| file_chooser_files_and_directories$ ;;</code></td></tr></table>
+<p>選択できる対象を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;file_chooser_res&gt; @public :=
+| file_chooser_approved$
+| file_chooser_canceled$
+| file_chooser_error$ ;;</code></td></tr></table>
+<p>ダイアログでの選択結果を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj file_chooser_h @public -&gt; &lt;file_chooser_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;file_chooser_h&gt; *File_chooser file_chooser_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;file_chooser_h&gt; *File_chooser file_chooser_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_file_chooser @public -&gt; &lt;file_chooser_h&gt; ;;</code></td></tr></table>
+<p>ファイル選択ツールを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;cstr&gt; *Text file_chooser_set_approve_button_text | set_approve_button_text @public -&gt; &lt;void&gt;</code></td></tr></table>
+<p>選択完了ボタンのテキストを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;a_jcomponent_h maybe&gt; *Comp_ file_chooser_set_accessory | set_accessory @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>アクセサリ（追加コンポーネント）を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;file_chooser_selection_mode&gt; *Mode file_chooser_set_file_selection_mode | set_file_selection_mode @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>選択モードを設定します。
+初期状態は<code>file_chooser_files_only$</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;bool&gt; *Sw file_chooser_set_multi_selection_enabled | set_multi_selection_enabled @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>複数選択を可能にするか否かを設定します。
+初期状態は，<code>false$</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;a_component_h&gt; *Owner &lt;cstr&gt; *Title file_chooser_show_dialog | show_dialog @public -&gt; &lt;file_chooser_res&gt; ;;</code></td></tr></table>
+<p>ダイアログを表示し，ユーザの選択を待ちます。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser file_chooser_get_selected_files | get_selected_files @public -&gt; &lt;cstr list&gt; ;;</code></td></tr></table>
+<p>選択されているファイルの絶対パスをリストで返します。</p>
 
 <p class="toc-ref"><a href="#toc">［目次］</a></p>
 <h1 id="5">5. Swingオブジェクト以外のデータ・関数</h1>

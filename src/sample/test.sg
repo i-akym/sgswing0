@@ -60,6 +60,7 @@ eval _main_ -> <void> {
   Cx "System custom cursor..." sw.create_menu_item = *Menu_item_system_custom_cursor_test,
   Cx "Key..." sw.create_menu_item = *Menu_item_key_test,
   Cx "Timer..." sw.create_menu_item = *Menu_item_timer_test,
+  Cx "File chooser..." sw.create_menu_item = *Menu_item_file_chooser_test,
 
   Cx "Canvas" sw.create_menu = *Menu_canvas_test,
   Cx Menu_canvas_test Menu_item_canvas_random_test sw.add_menu_item,
@@ -88,6 +89,7 @@ eval _main_ -> <void> {
   Cx Menu_test1 Menu_cursor_test sw.add_menu,
   Cx Menu_test1 Menu_item_key_test sw.add_menu_item,
   Cx Menu_test1 Menu_item_timer_test sw.add_menu_item,
+  Cx Menu_test1 Menu_item_file_chooser_test sw.add_menu_item,
 
   Cx sw.create_menu_bar = *Menu_bar,
   Cx Menu_bar Menu_test1 sw.add_menu,
@@ -112,6 +114,7 @@ eval _main_ -> <void> {
   Cx (Menu_item_system_custom_cursor_test sw.as_abutton) (Cx (Frame sw.as_window) setup_system_custom_cursor_test) sw.add_action_listener,
   Cx (Menu_item_key_test sw.as_abutton) (Cx (Frame sw.as_window) setup_key_test) sw.add_action_listener,
   Cx (Menu_item_timer_test sw.as_abutton) (Cx (Frame sw.as_window) setup_timer_test) sw.add_action_listener,
+  Cx (Menu_item_file_chooser_test sw.as_abutton) (Cx (Frame sw.as_window) setup_file_chooser_test) sw.add_action_listener,
 
   Cx Frame sw.exit_on_frame_close$ sw.set_default_close_operation,
   Cx (Frame sw.as_component) (300 200 sw.dimension$) sw.set_size,
@@ -1279,6 +1282,85 @@ eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_timer_test -> <sw.listener
   Cx (B_stop sw.as_abutton) Lis_stop sw.add_action_listener,
 
   Cx (Dialog sw.as_component) (200 100 sw.dimension$) sw.set_size,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
+    ECx Dialog true$ sw.set_visible
+  } sw.create_listener
+} ;;
+
+eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_file_chooser_test -> <sw.listener_h> {
+  Cx Parent "File chooser" sw.application_modal$ sw.create_dialog = *Dialog,
+  Cx sw.create_file_chooser = *File_chooser,
+
+  Cx 4 1 sw.create_grid_layout_panel = *P_config,
+  Cx sw.create_radio_button = *RB_files_only,
+  Cx (RB_files_only sw.as_abutton) "Files only" sw.set_text,
+  Cx sw.create_radio_button = *RB_directories_only,
+  Cx (RB_directories_only sw.as_abutton) "Directories only" sw.set_text,
+  Cx sw.create_radio_button = *RB_files_and_directories,
+  Cx (RB_files_and_directories sw.as_abutton) "Files and directories" sw.set_text,
+  Cx sw.create_button_group = *BG,
+  Cx BG RB_files_only sw.add_button,
+  Cx BG RB_directories_only sw.add_button,
+  Cx BG RB_files_and_directories sw.add_button,
+  Cx (RB_files_only sw.as_abutton) true$ sw.set_selected,
+  Cx sw.create_check_box = *CB_multi,
+  Cx (CB_multi sw.as_abutton) "Can select multiple objects" sw.set_text,
+  Cx (P_config sw.as_panel) (RB_files_only sw.as_component) sw.add_component,
+  Cx (P_config sw.as_panel) (RB_directories_only sw.as_component) sw.add_component,
+  Cx (P_config sw.as_panel) (RB_files_and_directories sw.as_component) sw.add_component,
+  Cx (P_config sw.as_panel) (CB_multi sw.as_component) sw.add_component,
+
+  Cx sw.create_button = *B_show,
+  Cx (B_show sw.as_abutton) "Show" sw.set_text,
+
+  Cx sw.create_border_layout_panel = *P_control,
+  Cx P_control (P_config sw.as_component) sw.border_layout_center$ sw.add_component,
+  Cx P_control (B_show sw.as_component) sw.border_layout_south$ sw.add_component,
+
+  Cx sw.create_text_area = *TA,
+
+  Cx "You can put an accessory component here." sw.create_label = *L_acc,
+  Cx (L_acc sw.as_jcomponent)
+    (Cx sw.lowered_etch$ sw.create_etched_border >> sw.as_border)
+    sw.set_border,
+  Cx File_chooser ((L_acc sw.as_jcomponent) value$) sw.set_accessory,
+
+  Cx Dialog sw.get_content_pane >> sw.instance = *CP sw.border_layout_panel_obj$,
+  Cx CP (P_control sw.as_component) sw.border_layout_north$ sw.add_component,
+  Cx CP (TA sw.as_component) sw.border_layout_center$ sw.add_component,
+
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    if {
+    ; ECx (RB_files_only sw.as_abutton) sw.selected? ->
+      ECx File_chooser sw.file_chooser_files_only$ sw.set_file_selection_mode
+    ; ECx (RB_directories_only sw.as_abutton) sw.selected? ->
+      ECx File_chooser sw.file_chooser_directories_only$ sw.set_file_selection_mode
+    ; ECx (RB_files_and_directories sw.as_abutton) sw.selected? ->
+      ECx File_chooser sw.file_chooser_files_and_directories$ sw.set_file_selection_mode
+    },
+    ECx File_chooser (ECx (CB_multi sw.as_abutton) sw.selected?) sw.set_multi_selection_enabled,
+    ECx File_chooser (Dialog sw.as_component) "Select" sw.show_dialog >> case {
+    ; sw.file_chooser_approved$ ->
+      ECx TA "[Approved]\n" sw.append,
+      (ECx File_chooser sw.get_selected_files)
+        \ <cstr> *F -> <void> { ECx TA F sw.append, ECx TA "\n" sw.append }
+        list.map >> ignore
+    ; sw.file_chooser_canceled$ ->
+      ECx TA "[Canceled]\n" sw.append
+    ; sw.file_chooser_error$ ->
+      ECx TA "[Error]\n" sw.append
+    ; *R ->
+      ECx TA "[Unexpected result]\n" sw.append,
+      ECx TA (R debug.repr) sw.append,
+      ECx TA "\n" sw.append
+    }
+  } sw.create_listener = *Lis_show,
+
+  Cx (B_show sw.as_abutton) Lis_show sw.add_action_listener,
+
+  Cx (Dialog sw.as_component) (400 200 sw.dimension$) sw.set_size,
 
   \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
     ECx (Dialog sw.as_window) ((Parent sw.as_component) sw.relative_to_component$) sw.set_location,
