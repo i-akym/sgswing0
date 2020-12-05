@@ -3783,6 +3783,16 @@ public class SNIswing {
     }));
   }
 
+  public void sni_file_chooser_get_current_directory_impl(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser) {
+    FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        RClientHelper ch = SNIswing.this.getClientHelper();
+        return ch.cstrToArrayItem(new Cstr(i.getCurrentDirectory().getAbsolutePath()));
+      }
+    }));
+  }
+
   public void sni_file_chooser_get_selected_files_impl(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser) {
     FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
     ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {

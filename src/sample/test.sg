@@ -1341,7 +1341,11 @@ eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_file_chooser_test -> <sw.l
       ECx File_chooser sw.file_chooser_files_and_directories$ sw.set_file_selection_mode
     },
     ECx File_chooser (ECx (CB_multi sw.as_abutton) sw.selected?) sw.set_multi_selection_enabled,
-    ECx File_chooser (Dialog sw.as_component) "Select" sw.show_dialog >> case {
+    ECx File_chooser (Dialog sw.as_component) "Select" sw.show_dialog = *Res,
+    ECx TA "Current directory: " sw.append,
+    ECx TA (ECx File_chooser sw.get_current_directory) sw.append,
+    ECx TA "\n" sw.append,
+    Res case {
     ; sw.file_chooser_approved$ ->
       ECx TA "[Approved]\n" sw.append,
       (ECx File_chooser sw.get_selected_files)
