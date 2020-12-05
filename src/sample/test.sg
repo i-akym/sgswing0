@@ -1293,7 +1293,7 @@ eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_file_chooser_test -> <sw.l
   Cx Parent "File chooser" sw.application_modal$ sw.create_dialog = *Dialog,
   Cx sw.create_file_chooser = *File_chooser,
 
-  Cx 4 1 sw.create_grid_layout_panel = *P_config,
+  Cx 6 1 sw.create_grid_layout_panel = *P_config,
   Cx sw.create_radio_button = *RB_files_only,
   Cx (RB_files_only sw.as_abutton) "Files only" sw.set_text,
   Cx sw.create_radio_button = *RB_directories_only,
@@ -1307,10 +1307,14 @@ eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_file_chooser_test -> <sw.l
   Cx (RB_files_only sw.as_abutton) true$ sw.set_selected,
   Cx sw.create_check_box = *CB_multi,
   Cx (CB_multi sw.as_abutton) "Can select multiple objects" sw.set_text,
+  Cx "Current directory (empty means system default):" sw.create_label = *L_cur_dir,
+  Cx sw.create_text_field = *TF_cur_dir,
   Cx (P_config sw.as_panel) (RB_files_only sw.as_component) sw.add_component,
   Cx (P_config sw.as_panel) (RB_directories_only sw.as_component) sw.add_component,
   Cx (P_config sw.as_panel) (RB_files_and_directories sw.as_component) sw.add_component,
   Cx (P_config sw.as_panel) (CB_multi sw.as_component) sw.add_component,
+  Cx (P_config sw.as_panel) (L_cur_dir sw.as_component) sw.add_component,
+  Cx (P_config sw.as_panel) (TF_cur_dir sw.as_component) sw.add_component,
 
   Cx sw.create_button = *B_show,
   Cx (B_show sw.as_abutton) "Show" sw.set_text,
@@ -1341,7 +1345,10 @@ eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_file_chooser_test -> <sw.l
       ECx File_chooser sw.file_chooser_files_and_directories$ sw.set_file_selection_mode
     },
     ECx File_chooser (ECx (CB_multi sw.as_abutton) sw.selected?) sw.set_multi_selection_enabled,
+    ECx File_chooser (ECx (TF_cur_dir sw.as_text_component) sw.get_text) sw.set_current_directory,
+
     ECx File_chooser (Dialog sw.as_component) "Select" sw.show_dialog = *Res,
+
     ECx TA "Current directory: " sw.append,
     ECx TA (ECx File_chooser sw.get_current_directory) sw.append,
     ECx TA "\n" sw.append,
