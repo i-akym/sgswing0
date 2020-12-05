@@ -1451,6 +1451,13 @@ eval &lt;file_chooser_h&gt; *File_chooser file_chooser_as_jcomponent | as_jcompo
 <table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;a_component_h&gt; *Owner &lt;cstr&gt; *Title file_chooser_show_dialog | show_dialog @public -&gt; &lt;file_chooser_res&gt; ;;</code></td></tr></table>
 <p>ダイアログを表示し，ユーザの選択を待ちます。</p>
 
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser file_chooser_get_current_directory | get_current_directory @public -&gt; &lt;cstr&gt; ;;</code></td></tr></table>
+<p>現在のディレクトリの絶対パスを返します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;cstr&gt; *Dir file_chooser_set_current_directory | set_current_directory @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>ディレクトリを設定します。
+空文字列の場合は，システムのデフォルトとなります。</p>
+
 <table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser file_chooser_get_selected_files | get_selected_files @public -&gt; &lt;cstr list&gt; ;;</code></td></tr></table>
 <p>選択されているファイルの絶対パスをリストで返します。</p>
 

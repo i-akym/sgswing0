@@ -1400,6 +1400,14 @@ eval <context_h> *Cx <file_chooser_h> *File_chooser <a_component_h> *Owner <cstr
   Cx File_chooser Owner Title ^file_chooser_show_dialog_impl call_impl_3_file_chooser_res
 } ;;
 
+eval <context_h> *Cx <file_chooser_h> *File_chooser file_chooser_get_current_directory | get_current_directory @public -> <cstr> {
+  Cx File_chooser ^file_chooser_get_current_directory_impl call_impl_1_cstr
+} ;;
+
+eval <context_h> *Cx <file_chooser_h> *File_chooser <cstr> *Dir file_chooser_set_current_directory | set_current_directory @public -> <void> {
+  Cx File_chooser Dir ^file_chooser_set_current_directory_impl call_impl_2_void
+} ;;
+
 eval <context_h> *Cx <file_chooser_h> *File_chooser file_chooser_get_selected_files | get_selected_files @public -> <cstr list> {
   Cx File_chooser ^file_chooser_get_selected_files_impl call_impl_1_cstr_list
 } ;;
@@ -1412,6 +1420,8 @@ eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <a
 eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <file_chooser_selection_mode> *Mode file_chooser_set_file_selection_mode_impl -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <bool> *Sw file_chooser_set_multi_selection_enabled_impl -> <void> @native ;;
 eval <context_h> *Cx <file_chooser_res result_sender> *Ret <file_chooser_h> *File_chooser <a_component_h> *Owner <cstr> *Title file_chooser_show_dialog_impl -> <void> @native ;;
+eval <context_h> *Cx <cstr result_sender> *Ret <file_chooser_h> *File_chooser file_chooser_get_current_directory_impl -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <cstr> *Dir file_chooser_set_current_directory_impl -> <void> @native ;;
 eval <context_h> *Cx <<cstr list> result_sender> *Ret <file_chooser_h> *File_chooser file_chooser_get_selected_files_impl -> <void> @native ;;
 
 
