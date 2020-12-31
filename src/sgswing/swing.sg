@@ -67,6 +67,7 @@ data <event_info_d> @public :=
 | <int> int_eid$
 | <char> char_eid$
 | <cstr> cstr_eid$
+| <cstr list> cstr_list_eid$
 | <vk> vk_eid$ ;;
 
 eval <event_proc> *Event_proc create_listener @public -> <listener_h> {
@@ -144,6 +145,14 @@ eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_remove_
   Cx Comp Lis ^a_component_impl_uninstall_focus_listener call_impl_2_void
 } ;;
 
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_add_key_listener | add_key_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_install_key_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_remove_key_listener | remove_key_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_uninstall_key_listener call_impl_2_void
+} ;;
+
 eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_add_mouse_listener | add_mouse_listener @public -> <void> {
   Cx Comp Lis ^a_component_impl_install_mouse_listener call_impl_2_void
 } ;;
@@ -156,16 +165,16 @@ eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_add_mou
   Cx Comp Lis ^a_component_impl_install_mouse_motion_listener call_impl_2_void
 } ;;
 
-eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_remove_mouse_motion_listener | remove_mouse_motion_listener @public -> <void> {
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_remove_mouse_motion_listener | remove_property_change_listener @public -> <void> {
   Cx Comp Lis ^a_component_impl_uninstall_mouse_motion_listener call_impl_2_void
 } ;;
 
-eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_add_key_listener | add_key_listener @public -> <void> {
-  Cx Comp Lis ^a_component_impl_install_key_listener call_impl_2_void
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_add_property_change_listener | add_property_change_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_install_property_change_listener call_impl_2_void
 } ;;
 
-eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_remove_key_listener | remove_key_listener @public -> <void> {
-  Cx Comp Lis ^a_component_impl_uninstall_key_listener call_impl_2_void
+eval <context_h> *Cx <a_component_h> *Comp <listener_h> *Lis a_component_remove_property_change_listener | remove_mouse_motion_listener @public -> <void> {
+  Cx Comp Lis ^a_component_impl_uninstall_property_change_listener call_impl_2_void
 } ;;
 
 eval <context_h> *Cx <a_component_h> *Comp <dimension> *Dim a_component_set_size | set_size @public -> <void> {
@@ -208,12 +217,14 @@ eval <context_h> *Cx <a_component_h> *Comp <cursor_h> *Cursor a_component_set_cu
 
 eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_install_focus_listener -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_uninstall_focus_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_install_key_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_uninstall_key_listener -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_install_mouse_listener -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_uninstall_mouse_listener -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_install_mouse_motion_listener -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_uninstall_mouse_motion_listener -> <void> @native ;;
-eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_install_key_listener -> <void> @native ;;
-eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_uninstall_key_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_install_property_change_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <listener_h> *Lis a_component_impl_uninstall_property_change_listener -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <dimension> *Dim a_component_impl_set_size -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <dimension maybe> *Dim_ a_component_impl_set_minimum_size -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <a_component_h> *Comp <dimension maybe> *Dim_ a_component_impl_set_maximum_size -> <void> @native ;;

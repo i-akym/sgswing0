@@ -47,6 +47,8 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -365,8 +367,6 @@ public class SNIswing {
     }
 
     void start() {
-      RClientHelper ch = SNIswing.this.getClientHelper();
-      this.eventInfoList = this.appendCommonInfo(this.eventInfoList);
       synchronized (this) {
         this.fire();  // guaranteed at least one listeners
       }
@@ -396,20 +396,6 @@ public class SNIswing {
         fired = false;
       }
       return fired;
-    }
-
-    RListItem appendCommonInfo(RListItem L) {
-      RClientHelper ch = SNIswing.this.getClientHelper();
-      // "source" : <swing_obj> obj_eid$
-      RDataConstr dcObjEid = ch.getDataConstr(MOD_NAME, "obj_eid$");
-      RObjItem oObjEid = ch.getStructItem(dcObjEid, new RObjItem[] { this.srcSwingObjItem });
-      RObjItem srcInfo = ch.getTupleItem(
-        new RObjItem[] { ch.cstrToArrayItem(new Cstr("source")), oObjEid });
-      RListItem.Cell c = ch.createListCellItem();
-      c.head = srcInfo;
-      c.tail = L;
-      L = c;
-      return L;
     }
   }
 
@@ -465,6 +451,26 @@ public class SNIswing {
     }));
   }
 
+  public void sni_a_component_impl_install_key_listener(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem comp, RObjItem lis) {
+    AComponentImpl i = ((AComponentHItem)comp).impl;
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        i.getAComponentImplAdapter().installKeyListener((ListenerHItem)lis);
+        return SNIswing.this.getClientHelper().getVoidItem();
+      }
+    }));
+  }
+
+  public void sni_a_component_impl_uninstall_key_listener(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem comp, RObjItem lis) {
+    AComponentImpl i = ((AComponentHItem)comp).impl;
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        i.getAComponentImplAdapter().uninstallKeyListener((ListenerHItem)lis);
+        return SNIswing.this.getClientHelper().getVoidItem();
+      }
+    }));
+  }
+
   public void sni_a_component_impl_install_mouse_listener(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem comp, RObjItem lis) {
     AComponentImpl i = ((AComponentHItem)comp).impl;
     ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
@@ -505,21 +511,21 @@ public class SNIswing {
     }));
   }
 
-  public void sni_a_component_impl_install_key_listener(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem comp, RObjItem lis) {
+  public void sni_a_component_impl_install_property_change_listener(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem comp, RObjItem lis) {
     AComponentImpl i = ((AComponentHItem)comp).impl;
     ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
       public RObjItem run() throws Exception {
-        i.getAComponentImplAdapter().installKeyListener((ListenerHItem)lis);
+        i.getAComponentImplAdapter().installPropertyChangeListener((ListenerHItem)lis);
         return SNIswing.this.getClientHelper().getVoidItem();
       }
     }));
   }
 
-  public void sni_a_component_impl_uninstall_key_listener(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem comp, RObjItem lis) {
+  public void sni_a_component_impl_uninstall_property_change_listener(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem comp, RObjItem lis) {
     AComponentImpl i = ((AComponentHItem)comp).impl;
     ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
       public RObjItem run() throws Exception {
-        i.getAComponentImplAdapter().uninstallKeyListener((ListenerHItem)lis);
+        i.getAComponentImplAdapter().uninstallPropertyChangeListener((ListenerHItem)lis);
         return SNIswing.this.getClientHelper().getVoidItem();
       }
     }));
@@ -684,6 +690,7 @@ public class SNIswing {
     MouseEventMgr mouseEventMgr;
     MouseMotionEventMgr mouseMotionEventMgr;
     KeyEventMgr keyEventMgr;
+    PropertyChangeEventMgr propertyChangeEventMgr;  // must be set before init()
 
     AComponentImplAdapter(AComponentImpl aComponentImpl, RObjItem handleItem, RObjItem swingObjItem) {
       super(aComponentImpl, handleItem, swingObjItem);
@@ -697,9 +704,11 @@ public class SNIswing {
       this.mouseEventMgr = new MouseEventMgr(this.swingObj);
       this.mouseMotionEventMgr = new MouseMotionEventMgr(this.swingObj);
       this.keyEventMgr = new KeyEventMgr(this.swingObj);
+      this.aComponentImpl.getZComponent().addFocusListener(this.focusEventMgr);
       this.aComponentImpl.getZComponent().addMouseListener(this.mouseEventMgr);
       this.aComponentImpl.getZComponent().addMouseMotionListener(this.mouseMotionEventMgr);
       this.aComponentImpl.getZComponent().addKeyListener(this.keyEventMgr);
+      this.aComponentImpl.getZComponent().addPropertyChangeListener(this.propertyChangeEventMgr);
     }
 
     void installFocusListener(ListenerHItem L) {
@@ -732,6 +741,14 @@ public class SNIswing {
 
     void uninstallKeyListener(ListenerHItem L) {
       this.keyEventMgr.uninstallListener(L);
+    }
+
+    void installPropertyChangeListener(ListenerHItem L) {
+      this.propertyChangeEventMgr.installListener(L);
+    }
+
+    void uninstallPropertyChangeListener(ListenerHItem L) {
+      this.propertyChangeEventMgr.uninstallListener(L);
     }
   }
 
@@ -1074,6 +1091,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "frame_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AWindowImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAComponent(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -1197,6 +1215,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "dialog_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AWindowImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAComponent(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -1343,6 +1362,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "menu_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AJComponentImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAJComponent(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -1431,6 +1451,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "popup_menu_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AJComponentImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAJComponent(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -1499,6 +1520,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "menu_item_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AButtonImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAButton(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -1670,6 +1692,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "border_layout_panel_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new APanelImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAPanel(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -1743,6 +1766,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "grid_layout_panel_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new APanelImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAPanel(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -1877,6 +1901,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "scroll_pane_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AJComponentImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAJComponent(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -2366,6 +2391,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "button_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AButtonImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAButton(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -2435,6 +2461,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "check_box_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AButtonImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAButton(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -2504,6 +2531,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "radio_button_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AButtonImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAButton(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -2709,6 +2737,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "label_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AJComponentImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAJComponent(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -2865,6 +2894,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "canvas_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AJComponentImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForAJComponent(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -3092,6 +3122,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "text_field_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new ATextComponentImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForATextComponent(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -3260,6 +3291,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "text_area_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new ATextComponentImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForATextComponent(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -3840,6 +3872,7 @@ public class SNIswing {
     RDataConstr dc = ch.getDataConstr(MOD_NAME, "file_chooser_obj$");
     RObjItem swingObjItem = ch.getStructItem(dc, new RObjItem[] { h } );
     impl.implAdapter = new AJComponentImplAdapter(impl, h, swingObjItem);
+    impl.implAdapter.propertyChangeEventMgr = new PropertyChangeEventMgrForFileChooser(impl);
     impl.implAdapter.init();
     return h;
   }
@@ -3977,25 +4010,32 @@ public class SNIswing {
 
     void processEvent(String s, E e) {
       if (this.listeners.size() > 0) {
-        EDTCallback c = SNIswing.this.createEDTCallback();
-        EventGroup eg = this.createEventGroup(c, s, e);
-        c.start(eg);
+        RListItem L = this.convertEvent(e, SNIswing.this.getClientHelper().getListNilItem());
+        if (L != null) {
+          L = SNIswing.this.appendEid(
+            "source",
+            SNIswing.this.swingObjEid(this.srcSwingObj.getSwingObjAdapter().swingObjItem),
+            L);
+          EDTCallback c = SNIswing.this.createEDTCallback();
+          EventGroup eg = this.createEventGroup(c, s, L);
+          c.start(eg);
+        }
       }
     }
 
-    EventGroup createEventGroup(EDTCallback edt, String s, E e) {
+    abstract RListItem convertEvent(E e, RListItem dl);
+
+    EventGroup createEventGroup(EDTCallback edt, String s, RListItem dl) {
       return new EventGroup(
         edt,
         this.listeners,
         this.srcSwingObj.getSwingObjAdapter().swingObjItem,
         SNIswing.this.getClientHelper().cstrToArrayItem(new Cstr(s)),
-        this.convertEvent(e));
+        dl);
     }
-
-    abstract RListItem convertEvent(E e);
   }
 
-// evengt - action
+// event - action
 
   class ActionEventMgr extends EventMgr<ActionEvent> implements ActionListener {
     ActionEventMgr(SwingObj src) {
@@ -4006,18 +4046,10 @@ public class SNIswing {
       this.processEvent("action.performed", e);
     }
 
-    RListItem convertEvent(ActionEvent e) {
-      RClientHelper ch = SNIswing.this.getClientHelper();
-      RListItem L = ch.getListNilItem();
-      RListItem.Cell c = ch.createListCellItem();
+    RListItem convertEvent(ActionEvent e, RListItem dl) {
+      RListItem L = dl;
       String ac = e.getActionCommand();
-      Cstr acs = new Cstr((ac == null)? "": ac);
-      c.head = ch.getTupleItem(new RObjItem[] {
-        ch.cstrToArrayItem(new Cstr("action_command")),
-        ch.getStructItem(ch.getDataConstr(MOD_NAME, "cstr_eid$"),
-          new RObjItem[] { ch.cstrToArrayItem(acs) }) });
-      c.tail = L;
-      L = c;
+      L = SNIswing.this.convertEventString("action_command", (ac == null)? "": ac, L);
       return L;
     }
   }
@@ -4041,8 +4073,8 @@ public class SNIswing {
       this.processEvent("document.remove", e);
     }
 
-    RListItem convertEvent(DocumentEvent e) {
-      return SNIswing.this.getClientHelper().getListNilItem();
+    RListItem convertEvent(DocumentEvent e, RListItem dl) {
+      return dl;
     }
   }
 
@@ -4061,10 +4093,8 @@ public class SNIswing {
       this.processEvent("focus.lost", e);
     }
 
-    RListItem convertEvent(FocusEvent e) {
-      RClientHelper ch = SNIswing.this.getClientHelper();
-      RListItem L = ch.getListNilItem();
-      return L;
+    RListItem convertEvent(FocusEvent e, RListItem dl) {
+      return dl;
     }
   }
 
@@ -4087,41 +4117,24 @@ public class SNIswing {
       this.processEvent("key.typed", e);
     }
 
-    RListItem convertEvent(KeyEvent e) {
+    RListItem convertEvent(KeyEvent e, RListItem dl) {
       switch (e.getID()) {
       case KeyEvent.KEY_TYPED:
-        return this.convertEvent1(e);
+        return this.convertEvent1(e, dl);
       default:
-        return this.convertEvent2(e);
+        return this.convertEvent2(e, dl);
       }
     }
 
-    RListItem convertEvent1(KeyEvent e) {
-      RClientHelper ch = SNIswing.this.getClientHelper();
-      RListItem L = ch.getListNilItem();
-      RListItem.Cell c = ch.createListCellItem();
-      c.head = ch.getTupleItem(new RObjItem[] {
-        ch.cstrToArrayItem(new Cstr("key_char")),
-        ch.getStructItem(ch.getDataConstr(MOD_NAME, "char_eid$"),
-          new RObjItem[] { ch.getCharItem(e.getKeyChar()) })
-      });
-      c.tail = L;
-      L = c;
+    RListItem convertEvent1(KeyEvent e, RListItem dl) {
+      RListItem L = dl;
+      L = SNIswing.this.convertEventChar("key_char", e.getKeyChar(), L);
       return L;
     }
 
-    RListItem convertEvent2(KeyEvent e) {
-      RClientHelper ch = SNIswing.this.getClientHelper();
-      RListItem L = ch.getListNilItem();
-      RListItem.Cell c = ch.createListCellItem();
-      RDataConstr dc = ch.getDataConstr(MOD_NAME, SNIswing.this.vkToDCName(e.getKeyCode()));
-      c.head = ch.getTupleItem(new RObjItem[] {
-        ch.cstrToArrayItem(new Cstr("key_code")),
-        ch.getStructItem(ch.getDataConstr(MOD_NAME, "vk_eid$"),
-          new RObjItem[] { ch.getStructItem(dc, new RObjItem[0]) })
-      });
-      c.tail = L;
-      L = c;
+    RListItem convertEvent2(KeyEvent e, RListItem dl) {
+      RListItem L = dl;
+      L = SNIswing.this.convertEventVK("key_code", e.getKeyCode(), L);
       return L;
     }
   }
@@ -4153,37 +4166,12 @@ public class SNIswing {
       this.processEvent("mouse.released", e);
     }
 
-    RListItem convertEvent(MouseEvent e) {
-      RClientHelper ch = SNIswing.this.getClientHelper();
-      RListItem L = ch.getListNilItem();
-      RListItem.Cell c = ch.createListCellItem();
-      c.head = ch.getTupleItem(new RObjItem[] {
-        ch.cstrToArrayItem(new Cstr("click_count")),
-        ch.getStructItem(ch.getDataConstr(MOD_NAME, "int_eid$"),
-          new RObjItem[] { ch.getIntItem(e.getClickCount()) }) });
-      c.tail = L;
-      L = c;
-      c = ch.createListCellItem();
-      c.head = ch.getTupleItem(new RObjItem[] {
-        ch.cstrToArrayItem(new Cstr("popup_trigger?")),
-        ch.getStructItem(ch.getDataConstr(MOD_NAME, "bool_eid$"),
-          new RObjItem[] { ch.getBoolItem(e.isPopupTrigger()) }) });
-      c.tail = L;
-      L = c;
-      c = ch.createListCellItem();
-      c.head = ch.getTupleItem(new RObjItem[] {
-        ch.cstrToArrayItem(new Cstr("x")),
-        ch.getStructItem(ch.getDataConstr(MOD_NAME, "int_eid$"),
-          new RObjItem[] { ch.getIntItem(e.getX()) }) });
-      c.tail = L;
-      L = c;
-      c = ch.createListCellItem();
-      c.head = ch.getTupleItem(new RObjItem[] {
-        ch.cstrToArrayItem(new Cstr("y")),
-        ch.getStructItem(ch.getDataConstr(MOD_NAME, "int_eid$"),
-          new RObjItem[] { ch.getIntItem(e.getY()) }) });
-      c.tail = L;
-      L = c;
+    RListItem convertEvent(MouseEvent e, RListItem dl) {
+      RListItem L = dl;
+      L = SNIswing.this.convertEventInt("click_count", e.getClickCount(), L);
+      L = SNIswing.this.convertEventBoolean("popup_trigger?", e.isPopupTrigger(), L);
+      L = SNIswing.this.convertEventInt("x", e.getX(), L);
+      L = SNIswing.this.convertEventInt("y", e.getY(), L);
       return L;
     }
   }
@@ -4203,23 +4191,149 @@ public class SNIswing {
       this.processEvent("mouse.moved", e);
     }
 
-    RListItem convertEvent(MouseEvent e) {
+    RListItem convertEvent(MouseEvent e, RListItem dl) {
+      RListItem L = dl;
+      L = SNIswing.this.convertEventInt("x", e.getX(), L);
+      L = SNIswing.this.convertEventInt("y", e.getY(), L);
+      return L;
+    }
+  }
+
+// event - property change
+
+  abstract class PropertyChangeEventMgr extends EventMgr<PropertyChangeEvent> implements PropertyChangeListener {
+    PropertyChangeEventMgr(SwingObj src) {
+      super(src);
+    }
+
+    public void propertyChange(PropertyChangeEvent e) {
+      this.processEvent("property.change", e);
+    }
+
+    RListItem convertEventPropertyName(String name, RListItem dl) {  // utility
+      RListItem L = dl;
+      L = SNIswing.this.convertEventString("property_name", name, L);
+      return L;
+    }
+
+    RListItem convertEventOldValue(RStructItem eid, RListItem dl) {  // utility
+      RListItem L = dl;
+      L = SNIswing.this.appendEid("old_value", eid, L);
+      return L;
+    }
+
+    RListItem convertEventNewValue(RStructItem eid, RListItem dl) {  // utility
+      RListItem L = dl;
+      L = SNIswing.this.appendEid("new_value", eid, L);
+      return L;
+    }
+  }
+
+  class PropertyChangeEventMgrForAComponent extends PropertyChangeEventMgr {
+    PropertyChangeEventMgrForAComponent(SwingObj src) {
+      super(src);
+    }
+
+    RListItem convertEvent(PropertyChangeEvent e, RListItem dl) {
+      return null;
+    }
+  }
+
+  class PropertyChangeEventMgrForAJComponent extends PropertyChangeEventMgrForAComponent {
+    PropertyChangeEventMgrForAJComponent(SwingObj src) {
+      super(src);
+    }
+
+    RListItem convertEvent(PropertyChangeEvent e, RListItem dl) {
+      return super.convertEvent(e, dl);
+    }
+  }
+
+  class PropertyChangeEventMgrForAPanel extends PropertyChangeEventMgrForAJComponent {
+    PropertyChangeEventMgrForAPanel(SwingObj src) {
+      super(src);
+    }
+
+    RListItem convertEvent(PropertyChangeEvent e, RListItem dl) {
+      return super.convertEvent(e, dl);
+    }
+  }
+
+  class PropertyChangeEventMgrForAButton extends PropertyChangeEventMgrForAJComponent {
+    PropertyChangeEventMgrForAButton(SwingObj src) {
+      super(src);
+    }
+
+    RListItem convertEvent(PropertyChangeEvent e, RListItem dl) {
+      return super.convertEvent(e, dl);
+    }
+  }
+
+  class PropertyChangeEventMgrForATextComponent extends PropertyChangeEventMgrForAJComponent {
+    PropertyChangeEventMgrForATextComponent(SwingObj src) {
+      super(src);
+    }
+
+    RListItem convertEvent(PropertyChangeEvent e, RListItem dl) {
+      return super.convertEvent(e, dl);
+    }
+  }
+
+  class PropertyChangeEventMgrForFileChooser extends PropertyChangeEventMgrForAJComponent {
+    PropertyChangeEventMgrForFileChooser(SwingObj src) {
+      super(src);
+    }
+
+    RListItem convertEvent(PropertyChangeEvent e, RListItem dl) {
+      String n = e.getPropertyName();
+      if (n.equals(JFileChooser.SELECTED_FILE_CHANGED_PROPERTY)) {
+        return this.convertEventSelectedFileChanged(e, dl);
+      } else if (n.equals(JFileChooser.SELECTED_FILES_CHANGED_PROPERTY)) {
+        return this.convertEventSelectedFilesChanged(e, dl);
+      } else {
+        return super.convertEvent(e, dl);
+      }
+    }
+
+    RListItem convertEventSelectedFileChanged(PropertyChangeEvent e, RListItem dl) {
+      File of = (File)e.getOldValue();
+      File nf = (File)e.getNewValue();
+      return this.convertEventSub1(
+        e,
+        (of != null)? new File[] { of }: new File[0],
+        (nf != null)? new File[] { nf }: new File[0],
+        dl);
+    }
+
+    RListItem convertEventSelectedFilesChanged(PropertyChangeEvent e, RListItem dl) {
+      File[] ofs = (File[])e.getOldValue();
+      File[] nfs = (File[])e.getNewValue();
+      return this.convertEventSub1(
+        e,
+        (ofs != null)? ofs: new File[0],
+        (nfs != null)? nfs: new File[0],
+        dl);
+    }
+
+    RListItem convertEventSub1(PropertyChangeEvent e, File[] ofs, File[] nfs, RListItem dl) {
       RClientHelper ch = SNIswing.this.getClientHelper();
-      RListItem L = ch.getListNilItem();
-      RListItem.Cell c = ch.createListCellItem();
-      c.head = ch.getTupleItem(new RObjItem[] {
-        ch.cstrToArrayItem(new Cstr("x")),
-        ch.getStructItem(ch.getDataConstr(MOD_NAME, "int_eid$"),
-          new RObjItem[] { ch.getIntItem(e.getX()) }) });
-      c.tail = L;
-      L = c;
-      c = ch.createListCellItem();
-      c.head = ch.getTupleItem(new RObjItem[] {
-        ch.cstrToArrayItem(new Cstr("y")),
-        ch.getStructItem(ch.getDataConstr(MOD_NAME, "int_eid$"),
-          new RObjItem[] { ch.getIntItem(e.getY()) }) });
-      c.tail = L;
-      L = c;
+      RListItem L = dl;
+
+      L = this.convertEventPropertyName("selected_files.changed", L);
+
+      List<RObjItem> oldFNs = new ArrayList<RObjItem>();
+      for (int i = 0; i < ofs.length; i++) {
+        oldFNs.add(ch.cstrToArrayItem(new Cstr(ofs[i].getAbsolutePath())));
+      }
+      RStructItem ov = SNIswing.this.cstrListEid(ch.listToListItem(oldFNs));
+      L = this.convertEventOldValue(ov, L);
+
+      List<RObjItem> newFNs = new ArrayList<RObjItem>();
+      for (int i = 0; i < nfs.length; i++) {
+        newFNs.add(ch.cstrToArrayItem(new Cstr(nfs[i].getAbsolutePath())));
+      }
+      RStructItem nv = SNIswing.this.cstrListEid(ch.listToListItem(newFNs));
+      L = this.convertEventNewValue(nv, L);
       return L;
     }
   }
@@ -4259,8 +4373,8 @@ public class SNIswing {
       this.processEvent("window.opened", e);
     }
 
-    RListItem convertEvent(WindowEvent e) {
-      return SNIswing.this.getClientHelper().getListNilItem();
+    RListItem convertEvent(WindowEvent e, RListItem dl) {
+      return dl;
     }
   }
 
@@ -4324,6 +4438,78 @@ public class SNIswing {
     RDataConstr dcSwingError = ch.getDataConstr(MOD_NAME, "swing_error$");
     return ch.getStructItem(dcSwingError,
       new RObjItem[] { ch.cstrToArrayItem(new Cstr(ex.toString())) });
+  }
+
+  RListItem convertEventBoolean(String name, boolean v, RListItem dl) {
+    return this.appendEid(name, this.boolEid(v), dl);
+  }
+
+  RStructItem boolEid(boolean v) {
+    RClientHelper ch = this.getClientHelper();
+    return ch.getStructItem(ch.getDataConstr(MOD_NAME, "bool_eid$"),
+      new RObjItem[] { ch.getBoolItem(v) });
+  }
+
+  RListItem convertEventInt(String name, int v, RListItem dl) {
+    return this.appendEid(name, this.intEid(v), dl);
+  }
+
+  RStructItem intEid(int v) {
+    RClientHelper ch = this.getClientHelper();
+    return ch.getStructItem(ch.getDataConstr(MOD_NAME, "int_eid$"),
+      new RObjItem[] { ch.getIntItem(v) });
+  }
+
+  RListItem convertEventChar(String name, char v, RListItem dl) {
+    return this.appendEid(name, this.charEid(v), dl);
+  }
+
+  RStructItem charEid(char v) {
+    RClientHelper ch = this.getClientHelper();
+    return ch.getStructItem(ch.getDataConstr(MOD_NAME, "char_eid$"),
+      new RObjItem[] { ch.getCharItem(v) });
+  }
+
+  RListItem convertEventString(String name, String v, RListItem dl) {
+    return this.appendEid(name, this.cstrEid(new Cstr(v)), dl);
+  }
+
+  RStructItem cstrEid(Cstr v) {
+    RClientHelper ch = this.getClientHelper();
+    return ch.getStructItem(ch.getDataConstr(MOD_NAME, "cstr_eid$"),
+      new RObjItem[] { ch.cstrToArrayItem(v) });
+  }
+
+  RStructItem cstrListEid(RListItem v) {  // v must be a <cstr list>
+    RClientHelper ch = this.getClientHelper();
+    return ch.getStructItem(ch.getDataConstr(MOD_NAME, "cstr_list_eid$"),
+      new RObjItem[] { v });
+  }
+
+  RListItem convertEventVK(String name, int v, RListItem dl) {
+    return this.appendEid(name, this.vkEid(v), dl);
+  }
+
+  RStructItem vkEid(int v) {
+    RClientHelper ch = this.getClientHelper();
+    RDataConstr dc = ch.getDataConstr(MOD_NAME, SNIswing.this.vkToDCName(v));
+    RObjItem o = ch.getStructItem(dc, new RObjItem[0]);
+    return ch.getStructItem(ch.getDataConstr(MOD_NAME, "vk_eid$"),
+      new RObjItem[] { o });
+  }
+
+  RStructItem swingObjEid(RObjItem v) {  // v must be a RStructItem of <swing_obj>
+    RClientHelper ch = this.getClientHelper();
+    return ch.getStructItem(ch.getDataConstr(MOD_NAME, "obj_eid$"),
+      new RObjItem[] { v });
+  }
+
+  RListItem appendEid(String name, RStructItem d, RListItem dl) {
+    RClientHelper ch = this.getClientHelper();
+    RListItem.Cell c = ch.createListCellItem();
+    c.head = ch.getTupleItem(new RObjItem[] { ch.cstrToArrayItem(new Cstr(name)), d });
+    c.tail = dl;
+    return c;
   }
 
   RObjItem getValueOfMaybeItem(RObjItem maybe) {
