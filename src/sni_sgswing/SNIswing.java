@@ -3727,6 +3727,26 @@ public class SNIswing {
     helper.setReturnValue(this.createFileChooserImpl());
   }
 
+  public void sni_file_chooser_impl_install_action_listener(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser, RObjItem lis) {
+    FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        i.installActionListener((ListenerHItem)lis);
+        return SNIswing.this.getClientHelper().getVoidItem();
+      }
+    }));
+  }
+
+  public void sni_file_chooser_impl_uninstall_action_listener(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser, RObjItem lis) {
+    FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
+    ((ContextHItem)cx).impl.request(this.makeSwingTask(helper, ret, new SwingRequest() {
+      public RObjItem run() throws Exception {
+        i.uninstallActionListener((ListenerHItem)lis);
+        return SNIswing.this.getClientHelper().getVoidItem();
+      }
+    }));
+  }
+
   public void sni_file_chooser_set_approve_button_text_impl(RNativeImplHelper helper, RClosureItem self, RObjItem cx, RObjItem ret, RObjItem fileChooser, RObjItem text) {
     FileChooserImpl i = ((FileChooserHItem)fileChooser).impl;
     String t = helper.arrayItemToCstr((RArrayItem)text).toJavaString();

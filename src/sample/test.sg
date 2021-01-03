@@ -1401,6 +1401,11 @@ eval <sw.context_h> *Cx <sw.a_window_h> *Parent setup_file_chooser_test -> <sw.l
 
   Cx (B_show sw.as_abutton) Lis_show sw.add_action_listener,
 
+  \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {
+    "File chooser: Action listener invoked." stdio.print_and_newline
+  } sw.create_listener = *Lis_action,
+  Cx File_chooser Lis_action sw.add_action_listener,
+
   Cx (Dialog sw.as_component) (400 250 sw.dimension$) sw.set_size,
 
   \ <sw.context_h> *ECx <cstr> *E <sw.event_info> *EI -> <void> {

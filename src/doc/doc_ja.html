@@ -1434,6 +1434,12 @@ eval &lt;file_chooser_h&gt; *File_chooser file_chooser_as_jcomponent | as_jcompo
 <table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_file_chooser @public -&gt; &lt;file_chooser_h&gt; ;;</code></td></tr></table>
 <p>ファイル選択ツールを作成します。</p>
 
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;listener_h&gt; *Lis file_chooser_add_action_listener | add_action_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>ActionListener</code>を追加します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;listener_h&gt; *Lis file_chooser_remove_action_listener | remove_action_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>ActionListener</code>を削除します。</p>
+
 <table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;cstr&gt; *Text file_chooser_set_approve_button_text | set_approve_button_text @public -&gt; &lt;void&gt;</code></td></tr></table>
 <p>選択完了ボタンのテキストを設定します。</p>
 
