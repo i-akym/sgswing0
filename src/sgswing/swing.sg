@@ -1391,6 +1391,14 @@ eval <context_h> *Cx create_file_chooser @public -> <file_chooser_h> {
   Cx create_file_chooser_impl
 } ;;
 
+eval <context_h> *Cx <file_chooser_h> *File_chooser <listener_h> *Lis file_chooser_add_action_listener | add_action_listener @public -> <void> {
+  Cx File_chooser Lis ^file_chooser_impl_install_action_listener call_impl_2_void
+} ;;
+
+eval <context_h> *Cx <file_chooser_h> *File_chooser <listener_h> *Lis file_chooser_remove_action_listener | remove_action_listener @public -> <void> {
+  Cx File_chooser Lis ^file_chooser_impl_uninstall_action_listener call_impl_2_void
+} ;;
+
 eval <context_h> *Cx <file_chooser_h> *File_chooser <cstr> *Text file_chooser_set_approve_button_text | set_approve_button_text @public -> <void> {
   Cx File_chooser Text ^file_chooser_set_approve_button_text_impl call_impl_2_void
 } ;;
@@ -1426,6 +1434,8 @@ eval <context_h> *Cx <file_chooser_h> *File_chooser file_chooser_get_selected_fi
 # bridge to Swing
 
 eval <context_h> *Cx create_file_chooser_impl -> <file_chooser_h> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <listener_h> *Lis file_chooser_impl_install_action_listener -> <void> @native ;;
+eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <listener_h> *Lis file_chooser_impl_uninstall_action_listener -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <cstr> *Text file_chooser_set_approve_button_text_impl -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <a_jcomponent_h maybe> *Comp_ file_chooser_set_accessory_impl -> <void> @native ;;
 eval <context_h> *Cx <void result_sender> *Ret <file_chooser_h> *File_chooser <file_chooser_selection_mode> *Mode file_chooser_set_file_selection_mode_impl -> <void> @native ;;
