@@ -19,7 +19,7 @@ kbd {
   vertical-align : super }
 -->
 </style>
-<title>SgSwing 0.1.0 解説</title>
+<title>SgSwing 0.2.0 解説</title>
 </head>
 <body>
 <h1>はじめに</h1>
@@ -33,7 +33,7 @@ kbd {
 <p>SgSwingはMIT Licenseに基いて配布されています。</p>
 <table border><tr><td>
 <p>MIT License </p>
-<p>Copyright (c) 2020 AKIYAMA Isao</p>
+<p>Copyright (c) 2021 AKIYAMA Isao</p>
 <p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the &quot;Software&quot;), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:</p>
 <p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.</p>
 <p>THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
@@ -95,6 +95,7 @@ kbd {
   <a href="#4.9">4.9. その他</a>
     <a href="#4.9.1">4.9.1. カーソル</a>
     <a href="#4.9.2">4.9.2. タイマ</a>
+    <a href="#4.9.3">4.9.3. ファイル選択ツール</a>
 <a href="#5">5. Swingオブジェクト以外のデータ・関数</a>
   <a href="#5.1">5.1. 例外</a>
   <a href="#5.2">5.2. コンテキスト</a>
@@ -376,7 +377,8 @@ Swingとの対応，変換可能な基底クラスのハンドルについては
 | &lt;text_area_h&gt; text_area_obj$
 | &lt;plain_document_h&gt; plain_document_obj$
 | &lt;cursor_h&gt; cursor_obj$
-| &lt;timer_h&gt; timer_obj$ ;;</code></td></tr></table>
+| &lt;timer_h&gt; timer_obj$
+| &lt;file_chooser_h&gt; file_chooser_obj$ ;;</code></td></tr></table>
 <p>Swingオブジェクトへのハンドルを表します。
 SgSwingのデータ（型）に振り分けるために使用します。</p>
 
@@ -407,6 +409,12 @@ Java AWTで定義されているコンポーネントとSwingで定義されて�
 <table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_remove_focus_listener | remove_focus_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
 <p><code>FocusListener</code>を削除します。</p>
 
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_add_key_listener | add_key_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>KeyListener</code>を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_remove_key_listener | remove_key_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>KeyListener</code>を削除します。</p>
+
 <table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_add_mouse_listener | add_mouse_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
 <p><code>MouseListener</code>を設定します。</p>
 
@@ -418,12 +426,6 @@ Java AWTで定義されているコンポーネントとSwingで定義されて�
 
 <table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_remove_mouse_motion_listener | remove_mouse_motion_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
 <p><code>MouseMotionListener</code>を削除します。</p>
-
-<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_add_key_listener | add_key_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
-<p><code>KeyListener</code>を設定します。</p>
-
-<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;listener_h&gt; *Lis a_component_remove_key_listener | remove_key_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
-<p><code>KeyListener</code>を削除します。</p>
 
 <table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;a_component_h&gt; *Comp &lt;dimension&gt; *Dim a_component_set_size | set_size @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
 <p>大きさを設定します。</p>
@@ -1401,6 +1403,71 @@ eval &lt;text_area_h&gt; *Text_area text_area_as_text_component | as_text_compon
 <p>タイマを停止します。</p>
 
 <p class="toc-ref"><a href="#toc">［目次］</a></p>
+<h3 id="4.9.3">4.9.3. ファイル選択ツール</h3>
+<p>ファイルを選択するツールです。
+通常はダイアログとして表示させますが，部品として使うこともできます。
+実体は，<code>javax.swing.JFileChooser</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;file_chooser_h&gt; @opaque ;;</code></td></tr></table>
+<p>ファイル選択ツールへのハンドルを表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;file_chooser_selection_mode&gt; @public :=
+| file_chooser_files_only$
+| file_chooser_directories_only$
+| file_chooser_files_and_directories$ ;;</code></td></tr></table>
+<p>選択できる対象を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>data &lt;file_chooser_res&gt; @public :=
+| file_chooser_approved$
+| file_chooser_canceled$
+| file_chooser_error$ ;;</code></td></tr></table>
+<p>ダイアログでの選択結果を表します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;swing_obj&gt; *Obj file_chooser_h @public -&gt; &lt;file_chooser_h maybe&gt; ;;</code></td></tr></table>
+<p>Swingオブジェクト情報をハンドルへ落とし込みます。
+型が一致しない場合は<code>none$</code>が返ります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;file_chooser_h&gt; *File_chooser file_chooser_as_component | as_component @public -&gt; &lt;a_component_h&gt; ;;
+eval &lt;file_chooser_h&gt; *File_chooser file_chooser_as_jcomponent | as_jcomponent @public -&gt; &lt;a_jcomponent_h&gt; ;;</code></td></tr></table>
+<p>それぞれの型のハンドルに変換します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx create_file_chooser @public -&gt; &lt;file_chooser_h&gt; ;;</code></td></tr></table>
+<p>ファイル選択ツールを作成します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;listener_h&gt; *Lis file_chooser_add_action_listener | add_action_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>ActionListener</code>を追加します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;listener_h&gt; *Lis file_chooser_remove_action_listener | remove_action_listener @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p><code>ActionListener</code>を削除します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;cstr&gt; *Text file_chooser_set_approve_button_text | set_approve_button_text @public -&gt; &lt;void&gt;</code></td></tr></table>
+<p>選択完了ボタンのテキストを設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;a_jcomponent_h maybe&gt; *Comp_ file_chooser_set_accessory | set_accessory @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>アクセサリ（追加コンポーネント）を設定します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;file_chooser_selection_mode&gt; *Mode file_chooser_set_file_selection_mode | set_file_selection_mode @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>選択モードを設定します。
+初期状態は<code>file_chooser_files_only$</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;bool&gt; *Sw file_chooser_set_multi_selection_enabled | set_multi_selection_enabled @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>複数選択を可能にするか否かを設定します。
+初期状態は，<code>false$</code>です。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;a_component_h&gt; *Owner &lt;cstr&gt; *Title file_chooser_show_dialog | show_dialog @public -&gt; &lt;file_chooser_res&gt; ;;</code></td></tr></table>
+<p>ダイアログを表示し，ユーザの選択を待ちます。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser file_chooser_get_current_directory | get_current_directory @public -&gt; &lt;cstr&gt; ;;</code></td></tr></table>
+<p>現在のディレクトリの絶対パスを返します。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser &lt;cstr&gt; *Dir file_chooser_set_current_directory | set_current_directory @public -&gt; &lt;void&gt; ;;</code></td></tr></table>
+<p>ディレクトリを設定します。
+空文字列の場合は，システムのデフォルトとなります。</p>
+
+<table border width="100%"><tr><td class="def"><code>eval &lt;context_h&gt; *Cx &lt;file_chooser_h&gt; *File_chooser file_chooser_get_selected_files | get_selected_files @public -&gt; &lt;cstr list&gt; ;;</code></td></tr></table>
+<p>選択されているファイルの絶対パスをリストで返します。</p>
+
+<p class="toc-ref"><a href="#toc">［目次］</a></p>
 <h1 id="5">5. Swingオブジェクト以外のデータ・関数</h1>
 <p>
 </p>
@@ -1777,6 +1844,10 @@ eval dialog_input_font | dialog_input @public -&gt; &lt;cstr&gt; ;;</code></td><
 <td><code>timer_h</code></td>
 <td><code>javax.swing.Timer</code></td>
 <td>-</td></tr>
+<tr><td>ファイル選択ツール</td>
+<td><code>file_chooser_h</code></td>
+<td><code>javax.swing.JFileChooser</code></td>
+<td><code>a_component_h a_jcomponent_h</code></td></tr>
 </table>
 
 <p class="toc-ref"><a href="#toc">［目次］</a></p>
