@@ -32,7 +32,7 @@ import "sango.io" -> io ;;
 import "sango.io.stdio" -> stdio ;;
 import "sango.string" -> str ;;
 import "sango.system.runtime" -> runtime ;;
-import "sango.util.avltree" -> avl ;;
+import "sango.util.avltree.map" -> avlmap ;;
 import "sango.util.map" -> map ;;
 import "sango.util.random" -> rand ;;
 import "sgswing.swing" -> sw ;;
@@ -141,8 +141,8 @@ data <game> :=
   game$ ;;
 
 data <board> :=
-  place_block_map: <int block avl.tree>
-  block_place_map: <block int avl.tree>
+  place_block_map: <int block map.map>
+  block_place_map: <block int map.map>
   board$ ;;
 
 data <display_state> :=
@@ -334,8 +334,8 @@ eval <sw.context_h> *Cx <int> *Place place_selected -> <void> {
   Board Place block_exist? >> case {
   ; true$ ->
     Board place_block_map = *BP_map,
-    ((Board block_place_map) "" avl.assoc >> value) slidable_map = *Slidable_map,
-    Slidable_map Place avl.assoc >> case {
+    ((Board block_place_map) "" map.assoc >> value) slidable_map = *Slidable_map,
+    Slidable_map Place map.assoc >> case {
     ; *Dir value$ ->
       Board Place Dir slide = *Board',
       board: Board' :: Game game$ = *Game',
@@ -358,7 +358,7 @@ eval <int> *X <int> *Y xy_to_place -> <int maybe> {
 } ;;
 
 eval <board> *Board <int> *Place block_exist? -> <bool> {
-  (Board place_block_map) Place avl.assoc >> value >> case {
+  (Board place_block_map) Place map.assoc >> value >> case {
   ; "" -> false$
   ; ** -> true$
   }
@@ -376,7 +376,7 @@ eval <sw.context_h> *Cx <game> *Game
   Game board = *Board,
   Board place_block_map = *BP_map,
   Game display_state = *Display_state,
-  ((Board block_place_map) "" avl.assoc >> value) slidable_map = *Slidable_map,
+  ((Board block_place_map) "" map.assoc >> value) slidable_map = *Slidable_map,
   Display_state cursor_ >> case {
   ; *Place value$ ->
     [ cursor_color sw.pa_set_color$, (Place place_point) cursor_dim sw.pa_draw_rect$ ]
@@ -388,10 +388,10 @@ eval <sw.context_h> *Cx <game> *Game
     ; ** || Board P block_exist? ->
       P place_point >> block_point = *Block_point,
       [ Block_num_color sw.pa_set_color$,
-        (BP_map P avl.assoc >> value) Block_point block_dim
+        (BP_map P map.assoc >> value) Block_point block_dim
           sw.horizontal_center$ sw.vertical_center$ sw.pa_draw_string3$
         ; L ] = *L',
-      Slidable_map P avl.assoc >> case {
+      Slidable_map P map.assoc >> case {
       ; *D value$ ->
         [ Arrow_color sw.pa_set_color$, (Block_point D arrow_polygon) sw.pa_fill_polygon$ ; L' ]
       ; ** -> L'
@@ -456,25 +456,25 @@ eval new_board -> <board> {
 } ;;
 
 eval empty_board -> <board> {
-  place_block_map: (int_ord_fs avl.new_tree)
-    block_place_map: (cstr.ord_fs avl.new_tree)
+  place_block_map: (int_ord_fs avlmap.new_map)
+    block_place_map: (cstr.ord_fs avlmap.new_map)
     board$
 } ;;
 
 eval <board> *Board <int> *Place <block> *Block put_block -> <board> {
   Board place_block_map = *Mpb,
   Board block_place_map = *Mbp,
-  place_block_map: (Mpb Place Block avl.add)
-    block_place_map: (Mbp Block Place avl.add)
+  place_block_map: (Mpb Place Block map.add)
+    block_place_map: (Mbp Block Place map.add)
     board$
 } ;;
 
 eval <board> *Board <int> *Place block_at -> <block> {
-  (Board place_block_map) Place avl.assoc >> value
+  (Board place_block_map) Place map.assoc >> value
 } ;;
 
 eval <board> *Board <block> *Block block_place -> <int> {
-  (Board block_place_map) Block avl.assoc >> value
+  (Board block_place_map) Block map.assoc >> value
 } ;;
 
 eval <int> *Place left_place -> <int maybe> {
@@ -558,21 +558,21 @@ eval <int> *Place slidables -> <<int <direction> <int <int maybe> fun> tuple> st
   }
 } ;;
 
-eval <int> *Place slidable_map -> <int direction avl.tree> {
+eval <int> *Place slidable_map -> <int direction map.map> {
   Place slidables = [| *S1, *S2, *S3, *S4, *S5, *S6 |],
-  int_ord_fs avl.new_tree = *T0,
+  int_ord_fs avlmap.new_map = *T0,
   S1 = (| *P1, *D1, ** |),
-  T0 P1 D1 avl.add = *T1,
+  T0 P1 D1 map.add = *T1,
   S2 = (| *P2, *D2, ** |),
-  T1 P2 D2 avl.add = *T2,
+  T1 P2 D2 map.add = *T2,
   S3 = (| *P3, *D3, ** |),
-  T2 P3 D3 avl.add = *T3,
+  T2 P3 D3 map.add = *T3,
   S4 = (| *P4, *D4, ** |),
-  T3 P4 D4 avl.add = *T4,
+  T3 P4 D4 map.add = *T4,
   S5 = (| *P5, *D5, ** |),
-  T4 P5 D5 avl.add = *T5,
+  T4 P5 D5 map.add = *T5,
   S6 = (| *P6, *D6, ** |),
-  T5 P6 D6 avl.add
+  T5 P6 D6 map.add
 } ;;
 
 eval <board> *Board <int> *Place <direction> *Dir slide -> <board> {
