@@ -205,7 +205,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "context_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -258,7 +262,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "listener_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -678,7 +686,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "a_component_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -815,7 +827,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "a_jcomponent_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -972,7 +988,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "a_window_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -1130,7 +1150,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "frame_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -1252,7 +1276,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "dialog_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -1318,7 +1346,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "menu_bar_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -1397,7 +1429,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "menu_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -1486,7 +1522,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "popup_menu_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -1557,7 +1597,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "menu_item_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -1611,7 +1655,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "a_panel_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -1733,7 +1781,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "border_layout_panel_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -1807,7 +1859,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "grid_layout_panel_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -1936,7 +1992,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "scroll_pane_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2014,7 +2074,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "a_border_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2087,7 +2151,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "empty_border_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2159,7 +2227,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "etched_border_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2218,7 +2290,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "titled_border_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2332,7 +2408,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "a_button_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2428,7 +2508,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "button_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2498,7 +2582,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "check_box_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2568,7 +2656,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "radio_button_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2629,7 +2721,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "button_group_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2772,7 +2868,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "label_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2816,7 +2916,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "image_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2855,7 +2959,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "icon_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -2948,7 +3056,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "canvas_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -3031,7 +3143,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "a_text_component_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -3171,7 +3287,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "text_field_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -3329,7 +3449,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "text_area_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -3404,7 +3528,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "a_document_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -3487,7 +3615,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "plain_document_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -3585,7 +3717,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "cursor_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -3707,7 +3843,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "timer_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -3938,7 +4078,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "file_chooser_h", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }
@@ -4001,7 +4145,11 @@ public class SNIswing {
       return RType.createTsig(MOD_NAME, "font", 0);
     }
 
-    public Cstr debugReprOfContents() {
+    public void doHash(RNativeImplHelper helper, RClosureItem self) {
+      helper.setReturnValue(helper.getIntItem(this.hashCode()));
+    }
+
+    public Cstr dumpInside() {
       return new Cstr(this.toString());
     }
   }

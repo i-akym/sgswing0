@@ -7,7 +7,7 @@
 MIT License
 
 ## REQUIREMENTS
-Sango 1.1 or higher  
+Sango 1.4 or higher  
 Java 1.8 or higher
 
 ## DOCUMENTS
